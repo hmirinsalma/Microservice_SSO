@@ -1,0 +1,47 @@
+# Build
+bin/
+obj/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Rider
+.idea/
+
+# VS Code
+.vscode/
+
+# Logs
+Logs/
+*.log
+
+# NuGet
+*.nupkg
+
+# EF Core local database
+*.mdf
+*.ldf
+
+# OS
+Thumbs.db
+Desktop.ini
+
+# Secrets
+appsettings.Development.json
+
+# Publish
+publish/
+
+# Test Results
+TestResults/
+
+# Generated
+Generated/
+
+# ReSharper
+_ReSharper*/
+*.DotSettings.user
