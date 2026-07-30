@@ -6,8 +6,6 @@ public static class ApplicationServiceExtensions
 {
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
-        // Les services Application seront enregistrés ici.
-
         return services;
     }
 }
