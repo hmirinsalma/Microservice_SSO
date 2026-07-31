@@ -138,15 +138,40 @@ Each layer has a single responsibility.
 
 # 📂 Project Structure
 
-```
+```text
 ONEE.SSO
 │
 ├── src
 │   ├── ONEE.SSO.API
+│   │   ├── Controllers
+│   │   ├── Middlewares
+│   │   ├── Extensions
+│   │   └── Program.cs
+│   │
 │   ├── ONEE.SSO.Application
+│   │   ├── DTOs
+│   │   ├── Interfaces
+│   │   ├── Repositories
+│   │   └── Features
+│   │
 │   ├── ONEE.SSO.Domain
+│   │   ├── Entities
+│   │   ├── Enums
+│   │   ├── Events
+│   │   ├── Exceptions
+│   │   └── ValueObjects
+│   │
 │   ├── ONEE.SSO.Infrastructure
+│   │   ├── Persistence
+│   │   ├── Repositories
+│   │   ├── Services
+│   │   └── Migrations
+│   │
 │   └── ONEE.SSO.Shared
+│       ├── Constants
+│       ├── Helpers
+│       ├── Responses
+│       └── Settings
 │
 ├── README.md
 ├── .gitignore
