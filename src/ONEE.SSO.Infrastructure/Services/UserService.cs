@@ -29,7 +29,6 @@ public class UserService : IUserService
     public async Task<IEnumerable<UserDto>> GetAllAsync()
     {
         var users = await _userRepository.GetAllAsync();
-
         return users.Select(MapToDto);
     }
 
@@ -43,38 +42,142 @@ public class UserService : IUserService
         return MapToDto(user);
     }
 
-    public Task<UserDto?> GetByEmailAsync(string email)
+    public async Task<UserDto?> GetByEmailAsync(string email)
     {
-        throw new NotImplementedException();
+        var user = await _userRepository.GetByEmailAsync(email);
+
+        if (user == null)
+            return null;
+
+        return MapToDto(user);
     }
 
-    public Task<UserDto> CreateAsync(CreateUserDto dto)
+    public async Task<bool> ExistsByEmailAsync(string email)
     {
-        throw new NotImplementedException();
+        return await _userRepository.EmailExistsAsync(email);
     }
 
-    public Task<UserDto> UpdateAsync(Guid id, UpdateUserDto dto)
+    public async Task<UserDto> CreateAsync(CreateUserDto dto)
     {
-        throw new NotImplementedException();
+        var user = new User
+        {
+            Id = Guid.NewGuid(),
+            FirstName = dto.FirstName,
+            LastName = dto.LastName,
+            Email = dto.Email,
+            PasswordHash = dto.Password,
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        await _userRepository.AddAsync(user);
+        await _userRepository.SaveChangesAsync();
+
+        return MapToDto(user);
     }
 
-    public Task DeleteAsync(Guid id)
+    public async Task<UserDto> UpdateAsync(Guid id, UpdateUserDto dto)
     {
-        throw new NotImplementedException();
+        var user = await _userRepository.GetByIdAsync(id);
+
+        if (user == null)
+            throw new Exception("User not found.");
+
+        user.FirstName = dto.FirstName;
+        user.LastName = dto.LastName;
+        user.Email = dto.Email;
+        user.IsActive = dto.IsActive;
+        user.UpdatedAt = DateTime.UtcNow;
+
+        _userRepository.Update(user);
+        await _userRepository.SaveChangesAsync();
+
+        return MapToDto(user);
     }
 
-    public Task<bool> ExistsByEmailAsync(string email)
+    public async Task DeleteAsync(Guid id)
     {
-        throw new NotImplementedException();
+        var user = await _userRepository.GetByIdAsync(id);
+
+        if (user == null)
+            throw new Exception("User not found.");
+
+        _userRepository.Delete(user);
+        await _userRepository.SaveChangesAsync();
     }
 
-    public Task ActivateAsync(Guid id)
+    public async Task ActivateAsync(Guid id)
     {
-        throw new NotImplementedException();
+        var user = await _userRepository.GetByIdAsync(id);
+
+        if (user == null)
+            throw new Exception("User not found.");
+
+        user.IsActive = true;
+        user.UpdatedAt = DateTime.UtcNow;
+
+        _userRepository.Update(user);
+        await _userRepository.SaveChangesAsync();
     }
 
-    public Task DeactivateAsync(Guid id)
+    public async Task DeactivateAsync(Guid id)
     {
-        throw new NotImplementedException();
+        var user = await _userRepository.GetByIdAsync(id);
+
+        if (user == null)
+            throw new Exception("User not found.");
+
+        user.IsActive = false;
+        user.UpdatedAt = DateTime.UtcNow;
+
+        _userRepository.Update(user);
+        await _userRepository.SaveChangesAsync();
+    }
+    public async Task<IEnumerable<UserDto>> SearchAsync(string keyword)
+    {
+        var users = await _userRepository.FindAsync(u =>
+            u.FirstName.Contains(keyword) ||
+            u.LastName.Contains(keyword) ||
+            u.Email.Contains(keyword));
+
+        return users.Select(MapToDto);
+    }
+
+    public async Task<IEnumerable<UserDto>> GetPagedAsync(int page, int pageSize)
+    {
+        var users = await _userRepository.GetAllAsync();
+
+        return users
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+           .Select(MapToDto);
+    }
+    public async Task<IEnumerable<UserDto>> FilterAsync(
+    string? firstName,
+    string? lastName,
+    bool? isActive)
+    {
+        var users = await _userRepository.GetAllAsync();
+
+        if (!string.IsNullOrWhiteSpace(firstName))
+        {
+            users = users.Where(u =>
+                u.FirstName.Contains(firstName,
+                    StringComparison.OrdinalIgnoreCase));
+        }
+
+        if (!string.IsNullOrWhiteSpace(lastName))
+        {
+            users = users.Where(u =>
+                u.LastName.Contains(lastName,
+                    StringComparison.OrdinalIgnoreCase));
+        }
+
+        if (isActive.HasValue)
+        {
+            users = users.Where(u => u.IsActive == isActive.Value);
+        }
+
+        return users.Select(MapToDto);
     }
 }
