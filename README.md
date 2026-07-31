@@ -285,12 +285,15 @@ The following functionalities have been manually tested using **Swagger** and **
 
 # 📸 Screenshots
 
-This section will be updated throughout the project.
+## Swagger API
 
-Current screenshots:
+![Swagger](docs/images/swagger-users.png)
 
-- Swagger UI
-- SQL Server Database
+---
+
+## SQL Server
+
+![SQL Server](docs/images/sql-users.png)
 
 Future screenshots:
 
