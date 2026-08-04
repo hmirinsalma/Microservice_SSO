@@ -12,15 +12,27 @@ public class RoleRepository : Repository<Role>, IRoleRepository
     {
     }
 
-    public async Task<Role?> GetByNameAsync(string name)
+    public async Task<Role?> GetByNameAsync(string name, Guid clientId)
     {
         return await _context.Roles
-            .FirstOrDefaultAsync(r => r.Name == name);
+            .FirstOrDefaultAsync(r =>
+                r.Name == name &&
+                r.ClientId == clientId);
     }
 
-    public async Task<bool> RoleExistsAsync(string name)
+    public async Task<bool> RoleExistsAsync(string name, Guid clientId)
     {
         return await _context.Roles
-            .AnyAsync(r => r.Name == name);
+            .AnyAsync(r =>
+                r.Name == name &&
+                r.ClientId == clientId);
+    }
+
+    public async Task<IEnumerable<Role>> GetByClientAsync(Guid clientId)
+    {
+        return await _context.Roles
+            .Where(r => r.ClientId == clientId)
+            .OrderBy(r => r.Name)
+            .ToListAsync();
     }
 }

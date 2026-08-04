@@ -5,7 +5,9 @@ namespace ONEE.SSO.Application.Repositories;
 
 public interface IPermissionRepository : IRepository<Permission>
 {
-    Task<Permission?> GetByCodeAsync(string code);
+    Task<Permission?> GetByCodeAsync(string code, Guid clientId);
 
-    Task<bool> PermissionExistsAsync(string code);
+    Task<bool> PermissionExistsAsync(string code, Guid clientId);
+
+    Task<IEnumerable<Permission>> GetByClientAsync(Guid clientId);
 }

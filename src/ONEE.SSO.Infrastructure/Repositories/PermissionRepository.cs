@@ -12,15 +12,27 @@ public class PermissionRepository : Repository<Permission>, IPermissionRepositor
     {
     }
 
-    public async Task<Permission?> GetByCodeAsync(string code)
+    public async Task<Permission?> GetByCodeAsync(string code, Guid clientId)
     {
         return await _context.Permissions
-            .FirstOrDefaultAsync(p => p.Code == code);
+            .FirstOrDefaultAsync(p =>
+                p.Code == code &&
+                p.ClientId == clientId);
     }
 
-    public async Task<bool> PermissionExistsAsync(string code)
+    public async Task<bool> PermissionExistsAsync(string code, Guid clientId)
     {
         return await _context.Permissions
-            .AnyAsync(p => p.Code == code);
+            .AnyAsync(p =>
+                p.Code == code &&
+                p.ClientId == clientId);
+    }
+
+    public async Task<IEnumerable<Permission>> GetByClientAsync(Guid clientId)
+    {
+        return await _context.Permissions
+            .Where(p => p.ClientId == clientId)
+            .OrderBy(p => p.Name)
+            .ToListAsync();
     }
 }

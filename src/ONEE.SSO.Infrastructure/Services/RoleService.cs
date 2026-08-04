@@ -21,7 +21,8 @@ public class RoleService : IRoleService
             Id = role.Id,
             Name = role.Name,
             Description = role.Description,
-            IsSystemRole = role.IsSystemRole
+            IsSystemRole = role.IsSystemRole,
+            ClientId = role.ClientId
         };
     }
 
@@ -44,14 +45,17 @@ public class RoleService : IRoleService
 
     public async Task<RoleDto> CreateAsync(CreateRoleDto dto)
     {
-        if (await _roleRepository.RoleExistsAsync(dto.Name))
-            throw new InvalidOperationException("Role already exists.");
+        if (await _roleRepository.RoleExistsAsync(dto.Name, dto.ClientId))
+            throw new InvalidOperationException(
+                "A role with this name already exists for this application.");
 
         var role = new Role
         {
             Id = Guid.NewGuid(),
             Name = dto.Name,
             Description = dto.Description ?? string.Empty,
+            IsSystemRole = dto.IsSystemRole,
+            ClientId = dto.ClientId,
             CreatedAt = DateTime.UtcNow
         };
 
@@ -70,12 +74,20 @@ public class RoleService : IRoleService
 
         role.Name = dto.Name;
         role.Description = dto.Description ?? string.Empty;
+        role.IsSystemRole = dto.IsSystemRole;
+        role.ClientId = dto.ClientId;
         role.UpdatedAt = DateTime.UtcNow;
 
         _roleRepository.Update(role);
         await _roleRepository.SaveChangesAsync();
 
         return MapToDto(role);
+    }
+    public async Task<IEnumerable<RoleDto>> GetByClientAsync(Guid clientId)
+    {
+        var roles = await _roleRepository.GetByClientAsync(clientId);
+
+        return roles.Select(MapToDto);
     }
 
     public async Task DeleteAsync(Guid id)

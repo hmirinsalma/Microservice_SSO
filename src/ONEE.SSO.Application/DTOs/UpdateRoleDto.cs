@@ -6,5 +6,7 @@ public class UpdateRoleDto
 
     public string? Description { get; set; }
 
-   
+    public bool IsSystemRole { get; set; }
+
+    public Guid ClientId { get; set; }
 }

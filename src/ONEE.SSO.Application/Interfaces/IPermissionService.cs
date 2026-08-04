@@ -1,7 +1,3 @@
-using ONEE.SSO.Application.DTOs;
-
-namespace ONEE.SSO.Application.Interfaces;
-
 public interface IPermissionService
 {
     Task<IEnumerable<PermissionDto>> GetAllAsync();
@@ -13,4 +9,6 @@ public interface IPermissionService
     Task<PermissionDto> UpdateAsync(Guid id, UpdatePermissionDto dto);
 
     Task DeleteAsync(Guid id);
+
+    Task<IEnumerable<PermissionDto>> GetByClientAsync(Guid clientId);
 }

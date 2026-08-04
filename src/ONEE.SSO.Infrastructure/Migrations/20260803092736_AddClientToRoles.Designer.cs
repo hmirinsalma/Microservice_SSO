@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ONEE.SSO.Infrastructure.Persistence;
 
@@ -11,9 +12,11 @@ using ONEE.SSO.Infrastructure.Persistence;
 namespace ONEE.SSO.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260803092736_AddClientToRoles")]
+    partial class AddClientToRoles
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -121,9 +124,6 @@ namespace ONEE.SSO.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("ClientId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<string>("Code")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -147,7 +147,7 @@ namespace ONEE.SSO.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ClientId", "Code")
+                    b.HasIndex("Code")
                         .IsUnique();
 
                     b.ToTable("Permissions", (string)null);
@@ -392,17 +392,6 @@ namespace ONEE.SSO.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("ONEE.SSO.Domain.Entities.Permission", b =>
-                {
-                    b.HasOne("ONEE.SSO.Domain.Entities.ClientApplication", "Client")
-                        .WithMany("Permissions")
-                        .HasForeignKey("ClientId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Client");
-                });
-
             modelBuilder.Entity("ONEE.SSO.Domain.Entities.RefreshToken", b =>
                 {
                     b.HasOne("ONEE.SSO.Domain.Entities.User", "User")
@@ -476,8 +465,6 @@ namespace ONEE.SSO.Infrastructure.Migrations
 
             modelBuilder.Entity("ONEE.SSO.Domain.Entities.ClientApplication", b =>
                 {
-                    b.Navigation("Permissions");
-
                     b.Navigation("Roles");
                 });
 

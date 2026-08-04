@@ -1,3 +1,5 @@
+namespace ONEE.SSO.Application.DTOs;
+
 public class RoleDto
 {
     public Guid Id { get; set; }
@@ -7,4 +9,6 @@ public class RoleDto
     public string Description { get; set; } = string.Empty;
 
     public bool IsSystemRole { get; set; }
+
+    public Guid ClientId { get; set; }
 }

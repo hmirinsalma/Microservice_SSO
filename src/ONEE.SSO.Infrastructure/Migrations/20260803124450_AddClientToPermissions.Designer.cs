@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ONEE.SSO.Infrastructure.Persistence;
 
@@ -11,9 +12,11 @@ using ONEE.SSO.Infrastructure.Persistence;
 namespace ONEE.SSO.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260803124450_AddClientToPermissions")]
+    partial class AddClientToPermissions
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -121,6 +124,9 @@ namespace ONEE.SSO.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid?>("ClientApplicationId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<Guid>("ClientId")
                         .HasColumnType("uniqueidentifier");
 
@@ -146,6 +152,8 @@ namespace ONEE.SSO.Infrastructure.Migrations
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ClientApplicationId");
 
                     b.HasIndex("ClientId", "Code")
                         .IsUnique();
@@ -394,8 +402,12 @@ namespace ONEE.SSO.Infrastructure.Migrations
 
             modelBuilder.Entity("ONEE.SSO.Domain.Entities.Permission", b =>
                 {
-                    b.HasOne("ONEE.SSO.Domain.Entities.ClientApplication", "Client")
+                    b.HasOne("ONEE.SSO.Domain.Entities.ClientApplication", null)
                         .WithMany("Permissions")
+                        .HasForeignKey("ClientApplicationId");
+
+                    b.HasOne("ONEE.SSO.Domain.Entities.ClientApplication", "Client")
+                        .WithMany()
                         .HasForeignKey("ClientId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();

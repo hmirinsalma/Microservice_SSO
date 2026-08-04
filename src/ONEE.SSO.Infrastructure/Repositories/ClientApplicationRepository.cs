@@ -23,4 +23,20 @@ public class ClientApplicationRepository : Repository<ClientApplication>, IClien
         return await _context.ClientApplications
             .AnyAsync(c => c.ClientId == clientId);
     }
+    public async Task<IEnumerable<ClientApplication>> SearchAsync(string keyword)
+    {
+        return await _context.ClientApplications
+            .Where(c =>
+                c.Name.Contains(keyword) ||
+                c.ClientId.Contains(keyword))
+            .ToListAsync();
+    }
+    public async Task<IEnumerable<ClientApplication>> GetPagedAsync(int pageNumber, int pageSize)
+    {
+        return await _context.ClientApplications
+            .OrderBy(c => c.Name)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+    }
 }

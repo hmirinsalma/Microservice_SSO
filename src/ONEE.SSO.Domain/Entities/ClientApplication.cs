@@ -13,4 +13,8 @@ public class ClientApplication : BaseAuditableEntity
     public string RedirectUri { get; set; } = string.Empty;
 
     public bool IsActive { get; set; } = true;
+
+    public ICollection<Role> Roles { get; set; } = new List<Role>();
+
+    public ICollection<Permission> Permissions { get; set; } = new List<Permission>();
 }

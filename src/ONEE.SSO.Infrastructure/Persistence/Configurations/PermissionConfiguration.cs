@@ -20,10 +20,18 @@ public class PermissionConfiguration : IEntityTypeConfiguration<Permission>
             .HasMaxLength(100)
             .IsRequired();
 
-        builder.HasIndex(x => x.Code)
-            .IsUnique();
-
         builder.Property(x => x.Description)
             .HasMaxLength(500);
+
+        builder.Property(x => x.ClientId)
+            .IsRequired();
+
+        builder.HasIndex(x => new { x.ClientId, x.Code })
+            .IsUnique();
+
+        builder.HasOne(x => x.Client)
+            .WithMany(c => c.Permissions)
+            .HasForeignKey(x => x.ClientId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

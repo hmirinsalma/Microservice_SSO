@@ -13,4 +13,12 @@ public interface IClientApplicationService
     Task<ClientApplicationDto> UpdateAsync(Guid id, UpdateClientApplicationDto dto);
 
     Task DeleteAsync(Guid id);
+
+    Task<IEnumerable<ClientApplicationDto>> SearchAsync(string keyword);
+
+    Task<IEnumerable<ClientApplicationDto>> GetPagedAsync(int page, int pageSize);
+
+    Task ActivateAsync(Guid id);
+
+    Task DeactivateAsync(Guid id);
 }

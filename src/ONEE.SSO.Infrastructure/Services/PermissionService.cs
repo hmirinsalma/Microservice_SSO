@@ -21,7 +21,8 @@ public class PermissionService : IPermissionService
             Id = permission.Id,
             Name = permission.Name,
             Code = permission.Code,
-            Description = permission.Description
+            Description = permission.Description,
+            ClientId = permission.ClientId
         };
     }
 
@@ -41,8 +42,9 @@ public class PermissionService : IPermissionService
 
     public async Task<PermissionDto> CreateAsync(CreatePermissionDto dto)
     {
-        if (await _permissionRepository.PermissionExistsAsync(dto.Code))
-            throw new InvalidOperationException("Permission already exists.");
+        if (await _permissionRepository.PermissionExistsAsync(dto.Code, dto.ClientId))
+            throw new InvalidOperationException(
+                "A permission with this code already exists for this application.");
 
         var permission = new Permission
         {
@@ -50,6 +52,7 @@ public class PermissionService : IPermissionService
             Name = dto.Name,
             Code = dto.Code,
             Description = dto.Description ?? string.Empty,
+            ClientId = dto.ClientId,
             CreatedAt = DateTime.UtcNow
         };
 
@@ -63,18 +66,25 @@ public class PermissionService : IPermissionService
     {
         var permission = await _permissionRepository.GetByIdAsync(id);
 
-        if (permission is null)
+        if (permission == null)
             throw new KeyNotFoundException("Permission not found.");
 
         permission.Name = dto.Name;
         permission.Code = dto.Code;
         permission.Description = dto.Description ?? string.Empty;
+        permission.ClientId = dto.ClientId;
         permission.UpdatedAt = DateTime.UtcNow;
 
         _permissionRepository.Update(permission);
         await _permissionRepository.SaveChangesAsync();
 
         return MapToDto(permission);
+    }
+    public async Task<IEnumerable<PermissionDto>> GetByClientAsync(Guid clientId)
+    {
+        var permissions = await _permissionRepository.GetByClientAsync(clientId);
+
+        return permissions.Select(MapToDto);
     }
 
     public async Task DeleteAsync(Guid id)

@@ -16,7 +16,7 @@ public class RoleConfiguration : IEntityTypeConfiguration<Role>
             .HasMaxLength(100)
             .IsRequired();
 
-        builder.HasIndex(x => x.Name)
+        builder.HasIndex(r => new { r.ClientId, r.Name })
             .IsUnique();
 
         builder.Property(x => x.Description)
@@ -24,5 +24,14 @@ public class RoleConfiguration : IEntityTypeConfiguration<Role>
 
         builder.Property(x => x.IsSystemRole)
             .IsRequired();
+
+        builder.Property(r => r.ClientId)
+           .IsRequired();
+
+        builder.HasOne(r => r.Client)
+           .WithMany(c => c.Roles)
+           .HasForeignKey(r => r.ClientId)
+           .OnDelete(DeleteBehavior.Restrict);
+       
     }
 }

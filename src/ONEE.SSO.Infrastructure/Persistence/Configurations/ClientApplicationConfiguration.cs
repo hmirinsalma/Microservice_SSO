@@ -33,5 +33,16 @@ public class ClientApplicationConfiguration : IEntityTypeConfiguration<ClientApp
 
         builder.Property(x => x.IsActive)
             .IsRequired();
+
+        builder.HasMany(c => c.Roles)
+            .WithOne(r => r.Client)
+            .HasForeignKey(r => r.ClientId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasMany(c => c.Permissions)
+            .WithOne(p => p.Client)
+            .HasForeignKey(p => p.ClientId)
+            .OnDelete(DeleteBehavior.Restrict);
+
     }
 }

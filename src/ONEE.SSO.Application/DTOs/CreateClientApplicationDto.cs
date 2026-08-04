@@ -9,4 +9,5 @@ public class CreateClientApplicationDto
     public string ClientSecret { get; set; } = string.Empty;
 
     public string RedirectUri { get; set; } = string.Empty;
+    public bool IsActive { get; set; } = true;
 }

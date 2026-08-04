@@ -52,7 +52,7 @@ public class ClientApplicationService : IClientApplicationService
             ClientId = dto.ClientId,
             ClientSecret = dto.ClientSecret,
             RedirectUri = dto.RedirectUri,
-            IsActive = true,
+            IsActive = dto.IsActive,
             CreatedAt = DateTime.UtcNow
         };
 
@@ -88,6 +88,44 @@ public class ClientApplicationService : IClientApplicationService
             throw new KeyNotFoundException("Client application not found.");
 
         _clientRepository.Delete(client);
+        await _clientRepository.SaveChangesAsync();
+    }
+    public async Task<IEnumerable<ClientApplicationDto>> SearchAsync(string keyword)
+    {
+        var clients = await _clientRepository.SearchAsync(keyword);
+
+        return clients.Select(MapToDto);
+    }
+    public async Task<IEnumerable<ClientApplicationDto>> GetPagedAsync(int pageNumber, int pageSize)
+    {
+        var clients = await _clientRepository.GetPagedAsync(pageNumber, pageSize);
+
+        return clients.Select(MapToDto);
+    }
+    public async Task ActivateAsync(Guid id)
+    {
+        var client = await _clientRepository.GetByIdAsync(id);
+
+        if (client is null)
+            throw new KeyNotFoundException("Client application not found.");
+
+        client.IsActive = true;
+        client.UpdatedAt = DateTime.UtcNow;
+
+        _clientRepository.Update(client);
+        await _clientRepository.SaveChangesAsync();
+    }
+    public async Task DeactivateAsync(Guid id)
+    {
+        var client = await _clientRepository.GetByIdAsync(id);
+
+        if (client is null)
+            throw new KeyNotFoundException("Client application not found.");
+
+        client.IsActive = false;
+        client.UpdatedAt = DateTime.UtcNow;
+
+        _clientRepository.Update(client);
         await _clientRepository.SaveChangesAsync();
     }
 }

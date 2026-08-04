@@ -11,4 +11,5 @@ public class UserRole : BaseEntity
     public Guid RoleId { get; set; }
 
     public Role Role { get; set; } = null!;
+    public DateTime AssignedAt { get; set; }
 }
