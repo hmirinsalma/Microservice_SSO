@@ -20,6 +20,7 @@ public static class InfrastructureServiceExtensions
                 configuration["Database:ConnectionString"]);
         });
 
+        services.AddScoped<IUserRoleRepository, UserRoleRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IRoleRepository, RoleRepository>();
         services.AddScoped<IPermissionRepository, PermissionRepository>();
@@ -34,6 +35,11 @@ public static class InfrastructureServiceExtensions
         services.AddScoped<IRefreshTokenService, RefreshTokenService>();
         services.AddScoped<IUserSessionService, UserSessionService>();
         services.AddScoped<IAuditLogService, AuditLogService>();
+        services.AddScoped<IUserRoleService, UserRoleService>();
+        services.AddScoped<IUserRoleRepository, UserRoleRepository>();
+        services.AddScoped<IRolePermissionRepository, RolePermissionRepository>();
+        services.AddScoped<IUserRoleService, UserRoleService>();
+        services.AddScoped<IRolePermissionService, RolePermissionService>();
 
         return services;
     }
