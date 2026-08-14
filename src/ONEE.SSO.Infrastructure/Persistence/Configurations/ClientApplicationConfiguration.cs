@@ -30,6 +30,26 @@ public class ClientApplicationConfiguration : IEntityTypeConfiguration<ClientApp
         builder.Property(x => x.RedirectUri)
             .HasMaxLength(500)
             .IsRequired();
+        builder.Property(x => x.PostLogoutRedirectUri)
+            .HasMaxLength(500);
+
+        builder.Property(x => x.AllowedScopes)
+            .HasMaxLength(1000);
+
+        builder.Property(x => x.AllowedGrantTypes)
+            .HasMaxLength(500);
+
+        builder.Property(x => x.RequirePkce)
+            .IsRequired();
+
+        builder.Property(x => x.RequireConsent)
+            .IsRequired();
+
+        builder.Property(x => x.AccessTokenLifetime)
+            .IsRequired();
+
+        builder.Property(x => x.RefreshTokenLifetime)
+            .IsRequired();
 
         builder.Property(x => x.IsActive)
             .IsRequired();

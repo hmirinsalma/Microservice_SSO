@@ -22,6 +22,31 @@ public static class ServiceCollectionExtensions
                 Version = "v1",
                 Description = "Microservice d'authentification SSO de ONEE"
             });
+
+            options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+            {
+                Name = "Authorization",
+                Type = SecuritySchemeType.Http,
+                Scheme = "bearer",
+                BearerFormat = "JWT",
+                In = ParameterLocation.Header,
+                Description = "Entrez votre JWT sous la forme : Bearer {token}"
+            });
+
+            options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
         });
 
         services.Configure<JwtSettings>(

@@ -1,11 +1,13 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ONEE.SSO.Application.DTOs;
 using ONEE.SSO.Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ONEE.SSO.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class UsersController : ControllerBase
 {
     private readonly IUserService _userService;

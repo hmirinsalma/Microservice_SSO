@@ -8,10 +8,14 @@ namespace ONEE.SSO.Infrastructure.Services;
 public class UserService : IUserService
 {
     private readonly IUserRepository _userRepository;
+    private readonly IPasswordHasher _passwordHasher;
 
-    public UserService(IUserRepository userRepository)
+    public UserService(
+        IUserRepository userRepository,
+        IPasswordHasher passwordHasher)
     {
         _userRepository = userRepository;
+        _passwordHasher = passwordHasher;
     }
 
     private static UserDto MapToDto(User user)
@@ -65,7 +69,7 @@ public class UserService : IUserService
             FirstName = dto.FirstName,
             LastName = dto.LastName,
             Email = dto.Email,
-            PasswordHash = dto.Password,
+            PasswordHash = _passwordHasher.Hash(dto.Password),
             IsActive = true,
             CreatedAt = DateTime.UtcNow
         };

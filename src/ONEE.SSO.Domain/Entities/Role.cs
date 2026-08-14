@@ -1,5 +1,6 @@
 using ONEE.SSO.Domain.Common;
-using ONEE.SSO.Domain.Entities;
+
+namespace ONEE.SSO.Domain.Entities;
 
 public class Role : BaseAuditableEntity
 {
@@ -13,7 +14,9 @@ public class Role : BaseAuditableEntity
 
     public ClientApplication Client { get; set; } = null!;
 
-    public ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
+    public ICollection<UserRole> UserRoles { get; set; }
+        = new List<UserRole>();
 
-    public ICollection<RolePermission> RolePermissions { get; set; } = new List<RolePermission>();
+    public ICollection<RolePermission> RolePermissions { get; set; }
+        = new List<RolePermission>();
 }

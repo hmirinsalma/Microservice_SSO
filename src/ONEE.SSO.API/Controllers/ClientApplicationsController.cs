@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using ONEE.SSO.Application.DTOs;
 using ONEE.SSO.Application.Interfaces;
 
 namespace ONEE.SSO.API.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class ClientApplicationsController : ControllerBase

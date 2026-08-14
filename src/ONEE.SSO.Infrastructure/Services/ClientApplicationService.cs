@@ -22,6 +22,13 @@ public class ClientApplicationService : IClientApplicationService
             Name = client.Name,
             ClientId = client.ClientId,
             RedirectUri = client.RedirectUri,
+            PostLogoutRedirectUri = client.PostLogoutRedirectUri,
+            AllowedScopes = client.AllowedScopes,
+            AllowedGrantTypes = client.AllowedGrantTypes,
+            RequirePkce = client.RequirePkce,
+            RequireConsent = client.RequireConsent,
+            AccessTokenLifetime = client.AccessTokenLifetime,
+            RefreshTokenLifetime = client.RefreshTokenLifetime,
             IsActive = client.IsActive
         };
     }
@@ -48,11 +55,31 @@ public class ClientApplicationService : IClientApplicationService
         var client = new ClientApplication
         {
             Id = Guid.NewGuid(),
+
             Name = dto.Name,
+
             ClientId = dto.ClientId,
+
             ClientSecret = dto.ClientSecret,
+
             RedirectUri = dto.RedirectUri,
+
+            PostLogoutRedirectUri = dto.PostLogoutRedirectUri,
+
+            AllowedScopes = dto.AllowedScopes,
+
+            AllowedGrantTypes = dto.AllowedGrantTypes,
+
+            RequirePkce = dto.RequirePkce,
+
+            RequireConsent = dto.RequireConsent,
+
+            AccessTokenLifetime = dto.AccessTokenLifetime,
+
+            RefreshTokenLifetime = dto.RefreshTokenLifetime,
+
             IsActive = dto.IsActive,
+
             CreatedAt = DateTime.UtcNow
         };
 
@@ -70,8 +97,25 @@ public class ClientApplicationService : IClientApplicationService
             throw new KeyNotFoundException("Client application not found.");
 
         client.Name = dto.Name;
+
         client.RedirectUri = dto.RedirectUri;
+
+        client.PostLogoutRedirectUri = dto.PostLogoutRedirectUri;
+
+        client.AllowedScopes = dto.AllowedScopes;
+
+        client.AllowedGrantTypes = dto.AllowedGrantTypes;
+
+        client.RequirePkce = dto.RequirePkce;
+
+        client.RequireConsent = dto.RequireConsent;
+
+        client.AccessTokenLifetime = dto.AccessTokenLifetime;
+
+        client.RefreshTokenLifetime = dto.RefreshTokenLifetime;
+
         client.IsActive = dto.IsActive;
+
         client.UpdatedAt = DateTime.UtcNow;
 
         _clientRepository.Update(client);
