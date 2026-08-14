@@ -56,6 +56,22 @@ public class LoginCommandHandler
             return null;
         }
 
+        // Vérifier si le compte est verrouillé
+        if (user.IsLocked)
+        {
+            await _auditLogService.LogAsync(
+                user.Id,
+                "LoginAttemptOnLockedAccount",
+                "User",
+                user.Id,
+                null,
+                null,
+                command.IpAddress,
+                command.UserAgent);
+            
+            return null;
+        }
+
         if (!user.IsActive)
         {
             // Log inactive user login attempt
@@ -78,6 +94,30 @@ public class LoginCommandHandler
 
         if (!passwordValid)
         {
+            // Incrémenter le compteur d'échecs
+            user.FailedLoginAttempts++;
+            user.LastFailedLoginAt = DateTime.UtcNow;
+
+            // Verrouiller après 5 tentatives
+            if (user.FailedLoginAttempts >= 5)
+            {
+                user.IsLocked = true;
+                user.LockedAt = DateTime.UtcNow;
+
+                await _auditLogService.LogAsync(
+                    user.Id,
+                    "AccountLocked",
+                    "User",
+                    user.Id,
+                    null,
+                    $"{{\"reason\": \"5 tentatives échouées\"}}",
+                    command.IpAddress,
+                    command.UserAgent);
+            }
+
+            _userRepository.Update(user);
+            await _userRepository.SaveChangesAsync();
+
             // Log invalid password attempt
             await _auditLogService.LogAsync(
                 user.Id,
@@ -91,6 +131,12 @@ public class LoginCommandHandler
             
             return null;
         }
+
+        // Login réussi - Réinitialiser le compteur d'échecs
+        user.FailedLoginAttempts = 0;
+        user.LastFailedLoginAt = null;
+        _userRepository.Update(user);
+        await _userRepository.SaveChangesAsync();
 
         // Récupérer les rôles de l'utilisateur
         var userRoles = await _userRoleRepository.GetByUserIdAsync(user.Id);

@@ -16,6 +16,9 @@ public class AuthController : ControllerBase
     private readonly LogoutCommandHandler _logoutCommandHandler;
     private readonly ValidateTokenCommandHandler _validateTokenCommandHandler;
     private readonly RefreshTokenCommandHandler _refreshTokenCommandHandler;
+    private readonly ForgotPasswordCommandHandler _forgotPasswordCommandHandler;
+    private readonly ResetPasswordCommandHandler _resetPasswordCommandHandler;
+    private readonly ChangePasswordCommandHandler _changePasswordCommandHandler;
     private readonly IUserRepository _userRepository;
     private readonly IUserRoleRepository _userRoleRepository;
     private readonly IRolePermissionRepository _rolePermissionRepository;
@@ -25,6 +28,9 @@ public class AuthController : ControllerBase
         LogoutCommandHandler logoutCommandHandler,
         ValidateTokenCommandHandler validateTokenCommandHandler,
         RefreshTokenCommandHandler refreshTokenCommandHandler,
+        ForgotPasswordCommandHandler forgotPasswordCommandHandler,
+        ResetPasswordCommandHandler resetPasswordCommandHandler,
+        ChangePasswordCommandHandler changePasswordCommandHandler,
         IUserRepository userRepository,
         IUserRoleRepository userRoleRepository,
         IRolePermissionRepository rolePermissionRepository)
@@ -33,6 +39,9 @@ public class AuthController : ControllerBase
         _logoutCommandHandler = logoutCommandHandler;
         _validateTokenCommandHandler = validateTokenCommandHandler;
         _refreshTokenCommandHandler = refreshTokenCommandHandler;
+        _forgotPasswordCommandHandler = forgotPasswordCommandHandler;
+        _resetPasswordCommandHandler = resetPasswordCommandHandler;
+        _changePasswordCommandHandler = changePasswordCommandHandler;
         _userRepository = userRepository;
         _userRoleRepository = userRoleRepository;
         _rolePermissionRepository = rolePermissionRepository;
@@ -192,5 +201,83 @@ public class AuthController : ControllerBase
         };
 
         return Ok(response);
+    }
+
+    /// <summary>
+    /// Demande de réinitialisation de mot de passe
+    /// </summary>
+    [HttpPost("forgot-password")]
+    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequestDto request)
+    {
+        var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
+
+        var command = new ForgotPasswordCommand
+        {
+            Email = request.Email,
+            IpAddress = ipAddress
+        };
+
+        var result = await _forgotPasswordCommandHandler.HandleAsync(command);
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Réinitialisation du mot de passe avec un token valide
+    /// </summary>
+    [HttpPost("reset-password")]
+    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequestDto request)
+    {
+        var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
+
+        var command = new ResetPasswordCommand
+        {
+            Token = request.Token,
+            NewPassword = request.NewPassword,
+            IpAddress = ipAddress
+        };
+
+        var result = await _resetPasswordCommandHandler.HandleAsync(command);
+
+        if (!result.Success)
+        {
+            return BadRequest(result);
+        }
+
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Changement de mot de passe pour un utilisateur authentifié
+    /// </summary>
+    [HttpPost("change-password")]
+    [Authorize]
+    public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequestDto request)
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+        {
+            return Unauthorized(new { message = "Token invalide" });
+        }
+
+        var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
+        var accessToken = HttpContext.Request.Headers.Authorization.ToString().Replace("Bearer ", "");
+
+        var command = new ChangePasswordCommand
+        {
+            UserId = userId,
+            CurrentPassword = request.CurrentPassword,
+            NewPassword = request.NewPassword,
+            IpAddress = ipAddress,
+            AccessToken = accessToken
+        };
+
+        var result = await _changePasswordCommandHandler.HandleAsync(command);
+
+        if (!result.Success)
+        {
+            return BadRequest(result);
+        }
+
+        return Ok(result);
     }
 }

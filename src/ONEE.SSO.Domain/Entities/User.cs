@@ -14,6 +14,21 @@ public class User : BaseAuditableEntity
 
     public bool IsActive { get; set; } = true;
 
+    // Security - Account Lockout
+    public int FailedLoginAttempts { get; set; } = 0;
+    public DateTime? LastFailedLoginAt { get; set; }
+    public bool IsLocked { get; set; } = false;
+    public DateTime? LockedAt { get; set; }
+
+    // Security - Password Reset
+    public string? PasswordResetToken { get; set; }
+    public DateTime? PasswordResetTokenExpiresAt { get; set; }
+
+    // Security - Email Verification
+    public bool IsEmailVerified { get; set; } = false;
+    public string? EmailVerificationToken { get; set; }
+    public DateTime? EmailVerificationTokenExpiresAt { get; set; }
+
     public ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
 
     public ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
