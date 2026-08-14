@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using ONEE.SSO.Domain.Entities;
+using ONEE.SSO.Infrastructure.Security;
 
 namespace ONEE.SSO.Infrastructure.Persistence.Seed;
 
@@ -7,113 +8,126 @@ public static class ClientApplicationsSeeder
 {
     public static async Task SeedAsync(ApplicationDbContext context)
     {
-        await SeedRhAsync(context);
+        await SeedGestionPersonnelAsync(context);
         await SeedTimsAsync(context);
         await SeedEamsAsync(context);
 
         await context.SaveChangesAsync();
     }
 
-    private static async Task SeedRhAsync(ApplicationDbContext context)
+    private static async Task SeedGestionPersonnelAsync(ApplicationDbContext context)
     {
-        const string clientId = "rh-client";
+        const string clientId = "gestion-personnel";
 
         if (await context.ClientApplications.AnyAsync(c => c.ClientId == clientId))
             return;
 
+        var passwordHasher = new BCryptPasswordHasher();
+        var clientSecret = "gestion-personnel-secret-2024"; // Secret pour dev
+        var hashedSecret = passwordHasher.Hash(clientSecret);
+
         context.ClientApplications.Add(new ClientApplication
         {
             Id = Guid.NewGuid(),
-            Name = "Gestion RH",
+            Name = "Gestion du Personnel",
             ClientId = clientId,
-            ClientSecret = Guid.NewGuid().ToString("N"),
+            ClientSecret = hashedSecret,
             RedirectUri = "http://localhost:5173/callback",
             PostLogoutRedirectUri = "http://localhost:5173/login",
-
-            AllowedScopes = "openid profile email roles offline_access rh",
-
-            AllowedGrantTypes = "authorization_code",
-
+            
+            // Scopes selon la fiche de l'application
+            AllowedScopes = "openid profile email roles offline_access gestion-personnel",
+            
+            AllowedGrantTypes = "authorization_code refresh_token",
+            
             RequirePkce = true,
-
             RequireConsent = false,
-
-            AccessTokenLifetime = 1800,
-
-            RefreshTokenLifetime = 28800,
-
+            
+            // 15 minutes access token
+            AccessTokenLifetime = 900,
+            
+            // 30 jours refresh token
+            RefreshTokenLifetime = 2592000,
+            
             IsActive = true,
-
             CreatedAt = DateTime.UtcNow
         });
     }
 
     private static async Task SeedTimsAsync(ApplicationDbContext context)
     {
-        const string clientId = "tims-client";
+        const string clientId = "tims-app";
 
         if (await context.ClientApplications.AnyAsync(c => c.ClientId == clientId))
             return;
 
+        var passwordHasher = new BCryptPasswordHasher();
+        var clientSecret = "tims-app-secret-2024"; // Secret pour dev
+        var hashedSecret = passwordHasher.Hash(clientSecret);
+
         context.ClientApplications.Add(new ClientApplication
         {
             Id = Guid.NewGuid(),
-            Name = "TIMS",
+            Name = "ONEE TIMS",
             ClientId = clientId,
-            ClientSecret = Guid.NewGuid().ToString("N"),
+            ClientSecret = hashedSecret,
             RedirectUri = "http://localhost:5173/callback",
             PostLogoutRedirectUri = "http://localhost:5173/login",
-
-            AllowedScopes =
-                "openid profile email roles tims_user_id serviceId teamId offline_access",
-
-            AllowedGrantTypes = "authorization_code",
-
+            
+            // Scopes custom pour TIMS selon la fiche
+            AllowedScopes = "openid profile email roles offline_access tims_user_id tims_service_id tims_team_id tims_roles",
+            
+            AllowedGrantTypes = "authorization_code refresh_token",
+            
             RequirePkce = true,
-
             RequireConsent = false,
-
+            
+            // 60 minutes access token (1 heure)
             AccessTokenLifetime = 3600,
-
-            RefreshTokenLifetime = 28800,
-
+            
+            // 24 heures refresh token
+            RefreshTokenLifetime = 86400,
+            
             IsActive = true,
-
             CreatedAt = DateTime.UtcNow
         });
     }
 
     private static async Task SeedEamsAsync(ApplicationDbContext context)
     {
-        const string clientId = "eams-client";
+        const string clientId = "eams-spa";
 
         if (await context.ClientApplications.AnyAsync(c => c.ClientId == clientId))
             return;
 
+        var passwordHasher = new BCryptPasswordHasher();
+        var clientSecret = "eams-spa-secret-2024"; // Secret pour dev
+        var hashedSecret = passwordHasher.Hash(clientSecret);
+
         context.ClientApplications.Add(new ClientApplication
         {
             Id = Guid.NewGuid(),
-            Name = "EAMS",
+            Name = "ONEE EAMS",
             ClientId = clientId,
-            ClientSecret = Guid.NewGuid().ToString("N"),
+            ClientSecret = hashedSecret,
             RedirectUri = "http://localhost:5173/auth/callback",
             PostLogoutRedirectUri = "http://localhost:5173/login",
-
-            AllowedScopes =
-                "openid profile email roles offline_access eams",
-
-            AllowedGrantTypes = "authorization_code",
-
+            
+            // Scopes custom pour EAMS selon la fiche
+            AllowedScopes = "openid profile email roles offline_access eams eams_user_id serviceId",
+            
+            AllowedGrantTypes = "authorization_code refresh_token",
+            
             RequirePkce = true,
-
             RequireConsent = false,
-
+            
+            // 30 minutes access token
             AccessTokenLifetime = 1800,
-
-            RefreshTokenLifetime = 28800,
-
+            
+            // 30 jours refresh token
+            RefreshTokenLifetime = 2592000,
+            
             IsActive = true,
-
             CreatedAt = DateTime.UtcNow
         });
     }

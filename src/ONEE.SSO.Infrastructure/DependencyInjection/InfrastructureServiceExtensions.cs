@@ -42,6 +42,7 @@ public static class InfrastructureServiceExtensions
         services.AddScoped<IPasswordHasher, BCryptPasswordHasher>();
         services.AddScoped<IJwtService, JwtService>();
         services.AddScoped<IJwtBlocklistService, JwtBlocklistService>();
+        services.AddScoped<IOidcDiscoveryService, OidcDiscoveryService>();
         
         // Add MemoryCache for JWT blocklist
         services.AddMemoryCache();

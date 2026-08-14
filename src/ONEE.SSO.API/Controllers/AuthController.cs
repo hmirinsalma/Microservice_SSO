@@ -1,8 +1,10 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ONEE.SSO.Application.Features.Auth.Commands;
 using ONEE.SSO.Application.Features.Auth.DTOs;
 using ONEE.SSO.Application.Features.Auth.Handlers;
+using ONEE.SSO.Application.Repositories;
 
 namespace ONEE.SSO.API.Controllers;
 
@@ -14,17 +16,26 @@ public class AuthController : ControllerBase
     private readonly LogoutCommandHandler _logoutCommandHandler;
     private readonly ValidateTokenCommandHandler _validateTokenCommandHandler;
     private readonly RefreshTokenCommandHandler _refreshTokenCommandHandler;
+    private readonly IUserRepository _userRepository;
+    private readonly IUserRoleRepository _userRoleRepository;
+    private readonly IRolePermissionRepository _rolePermissionRepository;
 
     public AuthController(
         LoginCommandHandler loginCommandHandler, 
         LogoutCommandHandler logoutCommandHandler,
         ValidateTokenCommandHandler validateTokenCommandHandler,
-        RefreshTokenCommandHandler refreshTokenCommandHandler)
+        RefreshTokenCommandHandler refreshTokenCommandHandler,
+        IUserRepository userRepository,
+        IUserRoleRepository userRoleRepository,
+        IRolePermissionRepository rolePermissionRepository)
     {
         _loginCommandHandler = loginCommandHandler;
         _logoutCommandHandler = logoutCommandHandler;
         _validateTokenCommandHandler = validateTokenCommandHandler;
         _refreshTokenCommandHandler = refreshTokenCommandHandler;
+        _userRepository = userRepository;
+        _userRoleRepository = userRoleRepository;
+        _rolePermissionRepository = rolePermissionRepository;
     }
 
     /// <summary>
@@ -134,5 +145,52 @@ public class AuthController : ControllerBase
         }
 
         return Ok(result);
+    }
+
+    /// <summary>
+    /// Endpoint OIDC userinfo - Retourne les informations de l'utilisateur authentifié
+    /// </summary>
+    [HttpGet("userinfo")]
+    [Authorize]
+    public async Task<IActionResult> GetUserInfo()
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+        {
+            return Unauthorized(new { message = "Token invalide" });
+        }
+
+        var user = await _userRepository.GetByIdAsync(userId);
+        if (user == null || !user.IsActive)
+        {
+            return Unauthorized(new { message = "Utilisateur introuvable ou inactif" });
+        }
+
+        // Récupérer les rôles
+        var userRoles = await _userRoleRepository.GetByUserIdAsync(userId);
+        var roles = userRoles.Select(ur => ur.Role.Name).Distinct().ToList();
+
+        // Récupérer les permissions
+        var permissions = new List<string>();
+        foreach (var userRole in userRoles)
+        {
+            var rolePermissions = await _rolePermissionRepository.GetByRoleIdAsync(userRole.RoleId);
+            permissions.AddRange(rolePermissions.Select(rp => rp.Permission.Code));
+        }
+        permissions = permissions.Distinct().ToList();
+
+        var response = new UserinfoResponseDto
+        {
+            Sub = userId.ToString(),
+            Email = user.Email,
+            EmailVerified = true, // TODO: Implémenter la vérification email
+            Name = $"{user.FirstName} {user.LastName}",
+            GivenName = user.FirstName,
+            FamilyName = user.LastName,
+            Roles = roles,
+            Permissions = permissions
+        };
+
+        return Ok(response);
     }
 }
