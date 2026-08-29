@@ -1,0 +1,131 @@
+@page
+@model LoginModel
+@{
+    ViewData["Title"] = "Connexion";
+}
+
+<div class="onee-card">
+    <!-- Header -->
+    <div class="onee-card-header">
+        <div class="onee-logo">
+            <i class="fas fa-shield-halved"></i>
+        </div>
+        <h1 class="onee-title">ONEE SSO</h1>
+        
+        @if (!string.IsNullOrEmpty(Model.ClientName))
+        {
+            <p class="onee-subtitle">Connexion à <strong>@Model.ClientName</strong></p>
+        }
+        else
+        {
+            <p class="onee-subtitle">Authentification Unique</p>
+        }
+    </div>
+
+    <!-- Message d'erreur -->
+    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+    {
+        <div class="onee-alert onee-alert-error" role="alert">
+            <i class="fas fa-exclamation-circle"></i>
+            <span>@Model.ErrorMessage</span>
+        </div>
+    }
+
+    <!-- Formulaire de connexion -->
+    <form method="post" id="loginForm">
+        <!-- Email -->
+        <div class="onee-form-group">
+            <label asp-for="Email" class="onee-label">Adresse Email</label>
+            <input asp-for="Email" 
+                   type="email" 
+                   class="onee-input" 
+                   placeholder="votre@email.ma"
+                   autocomplete="email"
+                   required />
+            <span asp-validation-for="Email" class="onee-error-message"></span>
+        </div>
+
+        <!-- Mot de passe -->
+        <div class="onee-form-group">
+            <label asp-for="Password" class="onee-label">Mot de passe</label>
+            <div class="onee-input-group">
+                <input asp-for="Password" 
+                       type="password" 
+                       id="password" 
+                       class="onee-input" 
+                       placeholder="••••••••"
+                       autocomplete="current-password"
+                       required />
+                <span class="onee-input-icon" onclick="togglePassword('password')">
+                    <i class="fas fa-eye"></i>
+                </span>
+            </div>
+            <span asp-validation-for="Password" class="onee-error-message"></span>
+        </div>
+
+        <!-- Se souvenir de moi -->
+        <div class="d-flex justify-between align-center mb-4">
+            <label class="d-flex align-center" style="gap: 0.5rem; cursor: pointer;">
+                <input asp-for="RememberMe" type="checkbox" style="width: auto;" />
+                <span style="font-size: 0.9rem; color: var(--onee-gray);">Se souvenir de moi</span>
+            </label>
+            <a href="/ForgotPassword" class="onee-link" style="font-size: 0.9rem;">
+                Mot de passe oublié ?
+            </a>
+        </div>
+
+        <!-- Champs cachés pour return_url et client_name -->
+        <input type="hidden" asp-for="ReturnUrl" />
+        <input type="hidden" name="client_name" value="@Model.ClientName" />
+
+        <!-- Bouton de connexion -->
+        <button type="submit" class="onee-btn onee-btn-primary" id="loginButton">
+            <i class="fas fa-sign-in-alt"></i>
+            Se connecter
+        </button>
+    </form>
+
+    <!-- Divider -->
+    <div class="onee-divider mt-4">
+        <span>ou</span>
+    </div>
+
+    <!-- Lien vers Swagger pour dev -->
+    <div class="mt-3">
+        <a href="/swagger" class="onee-btn onee-btn-secondary">
+            <i class="fas fa-code"></i>
+            Documentation API
+        </a>
+    </div>
+
+    <!-- Footer -->
+    <div class="onee-footer">
+        <p class="onee-footer-text">
+            <i class="fas fa-lock" style="color: var(--onee-success);"></i>
+            Connexion sécurisée
+        </p>
+        <p class="onee-footer-text mt-2">
+            © 2026 ONEE - Office National de l'Électricité et de l'Eau Potable
+        </p>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Gérer la soumission du formulaire
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            const button = document.getElementById('loginButton');
+            
+            // Afficher le loading
+            showLoading(button);
+        });
+
+        // Auto-focus sur le champ email
+        document.addEventListener('DOMContentLoaded', function() {
+            const emailInput = document.querySelector('input[type="email"]');
+            if (emailInput) {
+                emailInput.focus();
+            }
+        });
+    </script>
+}

@@ -1,0 +1,530 @@
+@page
+@model ONEE.SSO.API.Pages.SessionsModel
+@{
+    ViewData["Title"] = "Sessions Actives";
+    Layout = "_AdminLayout";
+}
+
+<div class="admin-container">
+    <!-- Header -->
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">
+                <i class="fas fa-users-cog"></i>
+                Sessions Actives
+            </h1>
+            <p class="page-subtitle">Gérer les sessions utilisateurs en temps réel</p>
+        </div>
+        <div class="page-actions">
+            <button class="btn btn-danger" onclick="confirmRevokeAll()">
+                <i class="fas fa-ban"></i>
+                Révoquer toutes les sessions
+            </button>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="stats-row">
+        <div class="stat-card-small">
+            <div class="stat-icon bg-primary">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-label">Sessions actives</div>
+                <div class="stat-value">@Model.ActiveSessions</div>
+            </div>
+        </div>
+
+        <div class="stat-card-small">
+            <div class="stat-icon bg-success">
+                <i class="fas fa-desktop"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-label">Applications en ligne</div>
+                <div class="stat-value">@Model.ActiveApplications</div>
+            </div>
+        </div>
+
+        <div class="stat-card-small">
+            <div class="stat-icon bg-warning">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-label">Durée moyenne</div>
+                <div class="stat-value">@Model.AverageDuration min</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters-section">
+        <form method="get" class="filters-form">
+            <div class="filter-group">
+                <input type="text" name="search" value="@Model.SearchTerm" placeholder="Rechercher par email..." class="filter-input" />
+            </div>
+            <select name="app" class="filter-select">
+                <option value="">Toutes les applications</option>
+                <option value="gestion-personnel" selected="@(Model.SelectedApp == "gestion-personnel")">Gestion Personnel</option>
+                <option value="tims-app" selected="@(Model.SelectedApp == "tims-app")">TIMS</option>
+                <option value="eams-spa" selected="@(Model.SelectedApp == "eams-spa")">EAMS</option>
+            </select>
+            <button type="submit" class="btn btn-secondary">
+                <i class="fas fa-search"></i>
+                Filtrer
+            </button>
+        </form>
+    </div>
+
+    <!-- Sessions Table -->
+    <div class="data-card">
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Utilisateur</th>
+                        <th>Application</th>
+                        <th>Adresse IP</th>
+                        <th>Navigateur</th>
+                        <th>Début session</th>
+                        <th>Durée</th>
+                        <th>Dernière activité</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var session in Model.Sessions)
+                    {
+                        <tr>
+                            <td>
+                                <div class="user-cell">
+                                    <div class="user-avatar-sm">
+                                        @session.UserEmail.Substring(0, 2).ToUpper()
+                                    </div>
+                                    <div>
+                                        <div class="user-name">@session.UserEmail</div>
+                                        <div class="user-id">ID: @session.UserId.ToString().Substring(0, 8)</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="app-badge" style="background: @session.AppColor">
+                                    <i class="@session.AppIcon"></i>
+                                    <span>@session.AppName</span>
+                                </div>
+                            </td>
+                            <td><code class="ip-address">@session.IpAddress</code></td>
+                            <td>
+                                <div class="browser-info">
+                                    <i class="fab fa-@session.BrowserIcon"></i>
+                                    <span>@session.BrowserName</span>
+                                </div>
+                            </td>
+                            <td>@session.StartedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>
+                                <span class="badge badge-info">
+                                    @session.Duration min
+                                </span>
+                            </td>
+                            <td>
+                                <span class="time-ago">@session.LastActivityAgo</span>
+                            </td>
+                            <td>
+                                <button type="button" class="btn-icon btn-danger" onclick="confirmRevoke('@session.SessionId', '@session.UserEmail')" title="Révoquer">
+                                    <i class="fas fa-ban"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        @if (!Model.Sessions.Any())
+        {
+            <div class="empty-state">
+                <i class="fas fa-users-slash"></i>
+                <h3>Aucune session active</h3>
+                <p>Il n'y a actuellement aucun utilisateur connecté</p>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Revoke Single Session Modal -->
+<div id="revokeModal" class="modal">
+    <div class="modal-content">
+        <h3><i class="fas fa-exclamation-triangle text-warning"></i> Révoquer la session</h3>
+        <p>Êtes-vous sûr de vouloir révoquer la session de <strong id="revokeUserEmail"></strong> ?</p>
+        <p class="text-muted">L'utilisateur sera déconnecté immédiatement.</p>
+        <form method="post" asp-page-handler="RevokeSession">
+            <input type="hidden" name="sessionId" id="revokeSessionId" />
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" onclick="closeRevokeModal()">Annuler</button>
+                <button type="submit" class="btn btn-danger">Révoquer</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Revoke All Sessions Modal -->
+<div id="revokeAllModal" class="modal">
+    <div class="modal-content">
+        <h3><i class="fas fa-exclamation-triangle text-danger"></i> Révoquer toutes les sessions</h3>
+        <p><strong>Attention!</strong> Vous êtes sur le point de révoquer toutes les sessions actives.</p>
+        <p class="text-danger">Tous les utilisateurs seront déconnectés immédiatement, y compris vous-même!</p>
+        <form method="post" asp-page-handler="RevokeAllSessions">
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" onclick="closeRevokeAllModal()">Annuler</button>
+                <button type="submit" class="btn btn-danger">Confirmer</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .admin-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 2rem;
+        }
+
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin: 0 0 0.5rem 0;
+        }
+
+        .page-subtitle {
+            color: #64748b;
+            margin: 0;
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card-small {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+        }
+
+        .stat-icon.bg-primary { background: linear-gradient(135deg, #1e3a8a, #3b82f6); }
+        .stat-icon.bg-success { background: linear-gradient(135deg, #065f46, #10b981); }
+        .stat-icon.bg-warning { background: linear-gradient(135deg, #92400e, #f59e0b); }
+
+        .stat-content {
+            flex: 1;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: #64748b;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .filters-section {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 1.5rem;
+        }
+
+        .filters-form {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .filter-input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .filter-select {
+            padding: 0.75rem 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+            background: white;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+        }
+
+        .btn-secondary {
+            background: #64748b;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #dc2626;
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .data-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table thead {
+            background: #f8fafc;
+        }
+
+        .data-table th {
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: #1e293b;
+            border-bottom: 2px solid #e2e8f0;
+            font-size: 0.875rem;
+        }
+
+        .data-table td {
+            padding: 1rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .data-table tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        .user-cell {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .user-avatar-sm {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .user-name {
+            font-weight: 600;
+            color: #1e293b;
+            font-size: 0.875rem;
+        }
+
+        .user-id {
+            font-size: 0.75rem;
+            color: #94a3b8;
+        }
+
+        .app-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            color: white;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .ip-address {
+            font-family: 'Courier New', monospace;
+            background: #f1f5f9;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.875rem;
+        }
+
+        .browser-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #475569;
+        }
+
+        .badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .badge-info {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .time-ago {
+            color: #64748b;
+            font-size: 0.875rem;
+        }
+
+        .btn-icon {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            background: #f1f5f9;
+            color: #475569;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-icon.btn-danger:hover {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #94a3b8;
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        .empty-state h3 {
+            color: #64748b;
+            margin-bottom: 0.5rem;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .modal-content h3 {
+            margin-bottom: 1rem;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 2rem;
+        }
+
+        .text-warning { color: #f59e0b; }
+        .text-danger { color: #dc2626; }
+        .text-muted { color: #64748b; font-size: 0.875rem; }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        function confirmRevoke(sessionId, userEmail) {
+            document.getElementById('revokeSessionId').value = sessionId;
+            document.getElementById('revokeUserEmail').textContent = userEmail;
+            document.getElementById('revokeModal').classList.add('show');
+        }
+
+        function closeRevokeModal() {
+            document.getElementById('revokeModal').classList.remove('show');
+        }
+
+        function confirmRevokeAll() {
+            document.getElementById('revokeAllModal').classList.add('show');
+        }
+
+        function closeRevokeAllModal() {
+            document.getElementById('revokeAllModal').classList.remove('show');
+        }
+    </script>
+}

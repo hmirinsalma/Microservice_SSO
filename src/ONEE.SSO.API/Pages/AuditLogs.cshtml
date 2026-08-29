@@ -1,0 +1,457 @@
+@page
+@model ONEE.SSO.API.Pages.AuditLogsModel
+@{
+    ViewData["Title"] = "Logs d'Audit";
+    Layout = "_AdminLayout";
+}
+
+<div class="admin-container">
+    <!-- Header -->
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">
+                <i class="fas fa-history"></i>
+                Logs d'Audit
+            </h1>
+            <p class="page-subtitle">Historique complet des activités système</p>
+        </div>
+        <div class="page-actions">
+            <button class="btn btn-primary" onclick="exportLogs()">
+                <i class="fas fa-download"></i>
+                Exporter (CSV)
+            </button>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters-section">
+        <form method="get" class="filters-form">
+            <div class="filter-group">
+                <input type="text" name="search" value="@Model.SearchTerm" placeholder="Rechercher..." class="filter-input" />
+            </div>
+            
+            <select name="action" class="filter-select">
+                <option value="">Toutes les actions</option>
+                <option value="login" selected="@(Model.SelectedAction == "login")">Connexion</option>
+                <option value="logout" selected="@(Model.SelectedAction == "logout")">Déconnexion</option>
+                <option value="create" selected="@(Model.SelectedAction == "create")">Création</option>
+                <option value="update" selected="@(Model.SelectedAction == "update")">Modification</option>
+                <option value="delete" selected="@(Model.SelectedAction == "delete")">Suppression</option>
+            </select>
+
+            <select name="entity" class="filter-select">
+                <option value="">Toutes les entités</option>
+                <option value="user" selected="@(Model.SelectedEntity == "user")">Utilisateur</option>
+                <option value="role" selected="@(Model.SelectedEntity == "role")">Rôle</option>
+                <option value="permission" selected="@(Model.SelectedEntity == "permission")">Permission</option>
+                <option value="application" selected="@(Model.SelectedEntity == "application")">Application</option>
+            </select>
+
+            <input type="date" name="dateFrom" value="@Model.DateFrom?.ToString("yyyy-MM-dd")" class="filter-input-date" />
+            <input type="date" name="dateTo" value="@Model.DateTo?.ToString("yyyy-MM-dd")" class="filter-input-date" />
+
+            <button type="submit" class="btn btn-secondary">
+                <i class="fas fa-search"></i>
+                Filtrer
+            </button>
+        </form>
+    </div>
+
+    <!-- Timeline -->
+    <div class="timeline-container">
+        @foreach (var log in Model.Logs)
+        {
+            <div class="timeline-item">
+                <div class="timeline-marker @log.ActionClass"></div>
+                <div class="timeline-content">
+                    <div class="log-header">
+                        <div class="log-icon @log.ActionClass">
+                            <i class="@log.ActionIcon"></i>
+                        </div>
+                        <div class="log-info">
+                            <h3 class="log-title">@log.Title</h3>
+                            <p class="log-description">@log.Description</p>
+                        </div>
+                        <div class="log-meta">
+                            <div class="log-time">
+                                <i class="fas fa-clock"></i>
+                                @log.CreatedAt.ToString("dd/MM/yyyy HH:mm:ss")
+                            </div>
+                            <div class="log-user">
+                                <i class="fas fa-user"></i>
+                                @log.UserEmail
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(log.Details))
+                    {
+                        <div class="log-details">
+                            <button type="button" class="btn-link" onclick="toggleDetails('@log.Id')">
+                                <i class="fas fa-chevron-down"></i>
+                                Voir les détails
+                            </button>
+                            <div id="details-@log.Id" class="details-content" style="display:none">
+                                <pre>@log.Details</pre>
+                            </div>
+                        </div>
+                    }
+
+                    <div class="log-footer">
+                        <span class="log-badge @log.ActionClass">@log.ActionName</span>
+                        <span class="log-badge entity">@log.EntityType</span>
+                        @if (!string.IsNullOrEmpty(log.IpAddress))
+                        {
+                            <span class="log-ip">
+                                <i class="fas fa-globe"></i>
+                                @log.IpAddress
+                            </span>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+
+        @if (!Model.Logs.Any())
+        {
+            <div class="empty-state">
+                <i class="fas fa-history"></i>
+                <h3>Aucun log trouvé</h3>
+                <p>Aucune activité ne correspond aux filtres sélectionnés</p>
+            </div>
+        }
+    </div>
+
+    <!-- Pagination -->
+    @if (Model.TotalPages > 1)
+    {
+        <div class="pagination">
+            @for (int i = 1; i <= Model.TotalPages; i++)
+            {
+                <a href="?page=@i&search=@Model.SearchTerm&action=@Model.SelectedAction&entity=@Model.SelectedEntity&dateFrom=@Model.DateFrom?.ToString("yyyy-MM-dd")&dateTo=@Model.DateTo?.ToString("yyyy-MM-dd")" 
+                   class="pagination-link @(i == Model.CurrentPage ? "active" : "")">
+                    @i
+                </a>
+            }
+        </div>
+    }
+</div>
+
+@section Styles {
+    <style>
+        .admin-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 2rem;
+        }
+
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin: 0 0 0.5rem 0;
+        }
+
+        .page-subtitle {
+            color: #64748b;
+            margin: 0;
+        }
+
+        .filters-section {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .filters-form {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .filter-input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .filter-input-date {
+            padding: 0.75rem 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .filter-select {
+            padding: 0.75rem 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+            background: white;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #64748b;
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .timeline-container {
+            position: relative;
+            padding-left: 2rem;
+        }
+
+        .timeline-container::before {
+            content: '';
+            position: absolute;
+            left: 1rem;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #e2e8f0;
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 2rem;
+        }
+
+        .timeline-marker {
+            position: absolute;
+            left: -1.5rem;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: white;
+            border: 3px solid;
+            z-index: 1;
+        }
+
+        .timeline-marker.login { border-color: #10b981; }
+        .timeline-marker.logout { border-color: #64748b; }
+        .timeline-marker.create { border-color: #3b82f6; }
+        .timeline-marker.update { border-color: #f59e0b; }
+        .timeline-marker.delete { border-color: #dc2626; }
+
+        .timeline-content {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-left: 1rem;
+        }
+
+        .log-header {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .log-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
+
+        .log-icon.login { background: #10b981; }
+        .log-icon.logout { background: #64748b; }
+        .log-icon.create { background: #3b82f6; }
+        .log-icon.update { background: #f59e0b; }
+        .log-icon.delete { background: #dc2626; }
+
+        .log-info {
+            flex: 1;
+        }
+
+        .log-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin: 0 0 0.25rem 0;
+        }
+
+        .log-description {
+            color: #64748b;
+            margin: 0;
+            font-size: 0.875rem;
+        }
+
+        .log-meta {
+            text-align: right;
+            font-size: 0.875rem;
+            color: #64748b;
+        }
+
+        .log-time {
+            margin-bottom: 0.25rem;
+        }
+
+        .log-details {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .btn-link {
+            background: none;
+            border: none;
+            color: #1e3a8a;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 0;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .details-content {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #f8fafc;
+            border-radius: 8px;
+        }
+
+        .details-content pre {
+            margin: 0;
+            font-size: 0.875rem;
+            color: #475569;
+            white-space: pre-wrap;
+        }
+
+        .log-footer {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .log-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .log-badge.login { background: #dcfce7; color: #166534; }
+        .log-badge.logout { background: #f1f5f9; color: #64748b; }
+        .log-badge.create { background: #dbeafe; color: #1e40af; }
+        .log-badge.update { background: #fef3c7; color: #92400e; }
+        .log-badge.delete { background: #fee2e2; color: #991b1b; }
+        .log-badge.entity { background: #f3e8ff; color: #6b21a8; }
+
+        .log-ip {
+            color: #64748b;
+            font-size: 0.75rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .pagination {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+
+        .pagination-link {
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            text-decoration: none;
+            color: #475569;
+            border: 2px solid #e2e8f0;
+            transition: all 0.2s;
+        }
+
+        .pagination-link.active {
+            background: #1e3a8a;
+            color: white;
+            border-color: #1e3a8a;
+        }
+
+        .pagination-link:hover:not(.active) {
+            background: #f8fafc;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #94a3b8;
+            background: white;
+            border-radius: 12px;
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        .empty-state h3 {
+            color: #64748b;
+            margin-bottom: 0.5rem;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        function toggleDetails(logId) {
+            const details = document.getElementById('details-' + logId);
+            if (details.style.display === 'none') {
+                details.style.display = 'block';
+            } else {
+                details.style.display = 'none';
+            }
+        }
+
+        function exportLogs() {
+            alert('Fonctionnalité d\'export en cours de développement');
+            // TODO: Implement CSV export
+        }
+    </script>
+}

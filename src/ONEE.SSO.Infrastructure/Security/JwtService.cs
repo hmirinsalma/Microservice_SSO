@@ -68,12 +68,20 @@ public class JwtService : IJwtService
             claims.Add(new Claim("permission", permission));
         }
 
-        var token = new JwtSecurityToken(
+        // Créer le header avec kid (Key ID) pour la validation JWT
+        var header = new JwtHeader(credentials);
+        header.Add("kid", "onee-sso-key-2024");
+
+        // Créer le payload
+        var now = DateTime.UtcNow;
+        var payload = new JwtPayload(
             issuer: issuer,
             audience: audience,
             claims: claims,
-            expires: DateTime.UtcNow.AddMinutes(expirationMinutes),
-            signingCredentials: credentials);
+            notBefore: now,
+            expires: now.AddMinutes(expirationMinutes));
+
+        var token = new JwtSecurityToken(header, payload);
 
         return new JwtSecurityTokenHandler()
             .WriteToken(token);
@@ -117,6 +125,71 @@ public class JwtService : IJwtService
         {
             return null;
         }
+    }
+
+    public string GenerateIdToken(
+        Guid userId,
+        string email,
+        string? fullName,
+        string clientId)
+    {
+        var jwtSection = _configuration.GetSection("Jwt");
+
+        var issuer = jwtSection["Issuer"]
+            ?? throw new InvalidOperationException("JWT Issuer is not configured.");
+
+        var secretKey = jwtSection["SecretKey"]
+            ?? throw new InvalidOperationException("JWT SecretKey is not configured.");
+
+        var expirationMinutes = int.TryParse(
+            jwtSection["AccessTokenExpirationMinutes"],
+            out var minutes)
+            ? minutes
+            : 15;
+
+        var key = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(secretKey));
+
+        var credentials = new SigningCredentials(
+            key,
+            SecurityAlgorithms.HmacSha256);
+
+        var now = DateTime.UtcNow;
+        var jti = Guid.NewGuid().ToString();
+
+        // Claims OIDC standard pour id_token
+        var claims = new List<Claim>
+        {
+            new(JwtRegisteredClaimNames.Sub, userId.ToString()),
+            new(JwtRegisteredClaimNames.Email, email),
+            new(JwtRegisteredClaimNames.Jti, jti),
+            new(JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64),
+            new(JwtRegisteredClaimNames.Aud, clientId), // Audience = client_id
+            new("email_verified", "true")
+        };
+
+        // Ajouter le nom si disponible
+        if (!string.IsNullOrEmpty(fullName))
+        {
+            claims.Add(new Claim(JwtRegisteredClaimNames.Name, fullName));
+        }
+
+        // Créer le header avec kid (Key ID) pour la validation JWT
+        var header = new JwtHeader(credentials);
+        header.Add("kid", "onee-sso-key-2024");
+
+        // Créer le payload
+        var payload = new JwtPayload(
+            issuer: issuer,
+            audience: clientId, // Pour id_token, audience = client_id
+            claims: claims,
+            notBefore: now,
+            expires: now.AddMinutes(expirationMinutes));
+
+        var token = new JwtSecurityToken(header, payload);
+
+        return new JwtSecurityTokenHandler()
+            .WriteToken(token);
     }
 
     public string? GetJtiFromToken(string token)

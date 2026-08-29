@@ -1,0 +1,250 @@
+@page
+@model ONEE.SSO.API.Pages.ClientApplicationsModel
+@{
+    ViewData["Title"] = "Applications Clientes";
+    Layout = "_AdminLayout";
+}
+
+<div class="admin-container">
+    <!-- Header -->
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">
+                <i class="fas fa-desktop"></i>
+                Applications Clientes
+            </h1>
+            <p class="page-subtitle">Gérer les applications intégrées au SSO</p>
+        </div>
+    </div>
+
+    <!-- Applications Grid -->
+    <div class="apps-grid">
+        @foreach (var app in Model.Applications)
+        {
+            <div class="app-card">
+                <div class="app-icon-lg" style="background: @app.Color">
+                    <i class="@app.Icon"></i>
+                </div>
+                <h3 class="app-name-lg">@app.Name</h3>
+                <p class="app-description">@app.Description</p>
+
+                <div class="app-info-grid">
+                    <div class="app-info-item">
+                        <span class="label">Client ID</span>
+                        <code class="value">@app.ClientId</code>
+                    </div>
+                    <div class="app-info-item">
+                        <span class="label">Callback URL</span>
+                        <code class="value">@app.RedirectUri</code>
+                    </div>
+                    <div class="app-info-item">
+                        <span class="label">Statut</span>
+                        <span class="badge @(app.IsActive ? "badge-success" : "badge-secondary")">
+                            @(app.IsActive ? "Active" : "Inactive")
+                        </span>
+                    </div>
+                    <div class="app-info-item">
+                        <span class="label">Créée le</span>
+                        <span class="value">@app.CreatedAt.ToString("dd/MM/yyyy")</span>
+                    </div>
+                </div>
+
+                <div class="app-stats-row">
+                    <div class="stat">
+                        <i class="fas fa-users"></i>
+                        <span>@app.TotalUsers utilisateurs</span>
+                    </div>
+                    <div class="stat">
+                        <i class="fas fa-sign-in-alt"></i>
+                        <span>@app.LoginsToday connexions aujourd'hui</span>
+                    </div>
+                </div>
+
+                <div class="app-actions">
+                    <form method="post" asp-page-handler="ToggleStatus" style="display:inline">
+                        <input type="hidden" name="id" value="@app.Id" />
+                        <button type="submit" class="btn @(app.IsActive ? "btn-warning" : "btn-success")">
+                            <i class="fas fa-@(app.IsActive ? "pause" : "play")"></i>
+                            @(app.IsActive ? "Désactiver" : "Activer")
+                        </button>
+                    </form>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .admin-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .page-header {
+            margin-bottom: 2rem;
+        }
+
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin: 0 0 0.5rem 0;
+        }
+
+        .page-subtitle {
+            color: #64748b;
+            margin: 0;
+        }
+
+        .apps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: 2rem;
+        }
+
+        .app-card {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .app-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+        }
+
+        .app-icon-lg {
+            width: 80px;
+            height: 80px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-size: 2rem;
+            color: white;
+        }
+
+        .app-name-lg {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin: 0 0 0.5rem 0;
+        }
+
+        .app-description {
+            color: #64748b;
+            margin: 0 0 2rem 0;
+        }
+
+        .app-info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            text-align: left;
+        }
+
+        .app-info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: #94a3b8;
+        }
+
+        .value {
+            font-size: 0.875rem;
+            color: #1e293b;
+        }
+
+        code.value {
+            background: #f1f5f9;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+        }
+
+        .badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .badge-success {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .badge-secondary {
+            background: #f1f5f9;
+            color: #64748b;
+        }
+
+        .app-stats-row {
+            display: flex;
+            justify-content: space-around;
+            padding: 1rem;
+            background: #f8fafc;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            color: #475569;
+        }
+
+        .stat i {
+            color: #1e3a8a;
+        }
+
+        .app-actions {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-warning {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+    </style>
+}

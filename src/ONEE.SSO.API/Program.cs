@@ -9,12 +9,12 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
-Console.WriteLine("== DÈbut Program ==");
+Console.WriteLine("== DÔøΩbut Program ==");
 
 
 var builder = WebApplication.CreateBuilder(args);
 
-Console.WriteLine("== Builder crÈÈ ==");
+Console.WriteLine("== Builder crÔøΩÔøΩ ==");
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -41,6 +41,47 @@ builder.Services
             ClockSkew = TimeSpan.Zero
         };
     });
+
+// Ajouter Razor Pages
+builder.Services.AddRazorPages();
+
+// Ajouter HttpClientFactory pour les appels API
+builder.Services.AddHttpClient();
+
+// Ajouter IHttpContextAccessor pour acc√©der au HttpContext dans les contr√¥leurs
+builder.Services.AddHttpContextAccessor();
+
+// Ajouter le store de codes d'autorisation (singleton partag√©)
+builder.Services.AddSingleton<ONEE.SSO.API.Services.AuthorizationCodeStore>();
+
+// Configurer CORS pour autoriser les applications clientes
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowClients", policy =>
+    {
+        policy.WithOrigins(
+            "http://localhost:5173",  // RH Frontend
+            "http://localhost:5174",  // RH Frontend (ancien port)
+            "http://localhost:5175",  // TIMS Frontend
+            "http://localhost:5291",  // RH Backend
+            "http://localhost:5115",  // TIMS Backend
+            "http://localhost:5137"   // EAMS Backend
+        )
+        .AllowAnyMethod()
+        .AllowAnyHeader()
+        .AllowCredentials();
+    });
+});
+
+// Ajouter les sessions pour stocker les tokens
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromHours(1);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+});
 builder.Host.UseSerilog((context, configuration) =>
 {
     configuration.ReadFrom.Configuration(context.Configuration);
@@ -66,6 +107,9 @@ using (var scope = app.Services.CreateScope())
 
     Console.WriteLine("== Seed Roles ==");
     await RolesSeeder.SeedAsync(context);
+
+    Console.WriteLine("== Seed Users ==");
+    await UsersSeeder.SeedAsync(context);
 
     Console.WriteLine("== Seed Permissions ==");
     await PermissionsSeeder.SeedAsync(context);
@@ -95,10 +139,14 @@ else
     app.UseHsts();
 }
 app.UseHttpsRedirection();
+app.UseStaticFiles(); // Activer les fichiers statiques (CSS, JS)
+app.UseCors("AllowClients"); // Activer CORS pour les applications clientes
+app.UseSession(); // Activer les sessions
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapRazorPages(); // Activer Razor Pages
 app.MapGet("/health", () =>
 {
     return Results.Ok(new

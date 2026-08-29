@@ -8,13 +8,13 @@ public static class RolesSeeder
     public static async Task SeedAsync(ApplicationDbContext context)
     {
         var rhClient = await context.ClientApplications
-            .FirstOrDefaultAsync(c => c.ClientId == "rh-client");
+            .FirstOrDefaultAsync(c => c.ClientId == "gestion-personnel");
 
         var timsClient = await context.ClientApplications
-            .FirstOrDefaultAsync(c => c.ClientId == "tims-client");
+            .FirstOrDefaultAsync(c => c.ClientId == "tims-app");
 
         var eamsClient = await context.ClientApplications
-            .FirstOrDefaultAsync(c => c.ClientId == "eams-client");
+            .FirstOrDefaultAsync(c => c.ClientId == "eams-spa");
 
         if (rhClient is null || timsClient is null || eamsClient is null)
         {

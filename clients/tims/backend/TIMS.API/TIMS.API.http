@@ -1,0 +1,6 @@
+@TIMS.API_HostAddress = http://localhost:5115
+
+GET {{TIMS.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

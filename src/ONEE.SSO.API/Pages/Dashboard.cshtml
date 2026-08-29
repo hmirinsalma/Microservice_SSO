@@ -1,0 +1,485 @@
+@page
+@model ONEE.SSO.API.Pages.DashboardModel
+@{
+    ViewData["Title"] = "Dashboard SSO";
+    Layout = "_AdminLayout";
+}
+
+<div class="dashboard-container">
+    <!-- Header -->
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">
+                <i class="fas fa-tachometer-alt"></i>
+                Tableau de Bord SSO
+            </h1>
+            <p class="page-subtitle">Vue d'ensemble du système d'authentification ONEE</p>
+        </div>
+        <div class="page-actions">
+            <span class="badge badge-success">
+                <i class="fas fa-circle"></i> Système actif
+            </span>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="stats-grid">
+        <!-- Total Users -->
+        <div class="stat-card stat-primary">
+            <div class="stat-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-label">Utilisateurs</div>
+                <div class="stat-value">@Model.TotalUsers</div>
+                <div class="stat-trend">
+                    <i class="fas fa-arrow-up"></i> +@Model.NewUsersThisMonth ce mois
+                </div>
+            </div>
+        </div>
+
+        <!-- Active Sessions -->
+        <div class="stat-card stat-success">
+            <div class="stat-icon">
+                <i class="fas fa-user-check"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-label">Sessions actives</div>
+                <div class="stat-value">@Model.ActiveSessions</div>
+                <div class="stat-trend">
+                    <i class="fas fa-circle"></i> En ligne maintenant
+                </div>
+            </div>
+        </div>
+
+        <!-- Client Applications -->
+        <div class="stat-card stat-info">
+            <div class="stat-icon">
+                <i class="fas fa-desktop"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-label">Applications</div>
+                <div class="stat-value">@Model.TotalApplications</div>
+                <div class="stat-trend">
+                    <i class="fas fa-check"></i> @Model.ActiveApplications actives
+                </div>
+            </div>
+        </div>
+
+        <!-- Today's Logins -->
+        <div class="stat-card stat-warning">
+            <div class="stat-icon">
+                <i class="fas fa-sign-in-alt"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-label">Connexions aujourd'hui</div>
+                <div class="stat-value">@Model.LoginsToday</div>
+                <div class="stat-trend">
+                    <i class="fas fa-chart-line"></i> @Model.LoginsTrend% vs hier
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity & Quick Actions -->
+    <div class="dashboard-grid">
+        <!-- Recent Logins -->
+        <div class="dashboard-card">
+            <div class="card-header">
+                <h2 class="card-title">
+                    <i class="fas fa-history"></i>
+                    Dernières connexions
+                </h2>
+                <a href="/AuditLogs" class="btn-link">Voir tout</a>
+            </div>
+            <div class="card-body">
+                @if (Model.RecentLogins.Any())
+                {
+                    <div class="activity-list">
+                        @foreach (var login in Model.RecentLogins)
+                        {
+                            <div class="activity-item">
+                                <div class="activity-icon">
+                                    <i class="fas fa-sign-in-alt text-success"></i>
+                                </div>
+                                <div class="activity-content">
+                                    <div class="activity-title">@login.UserEmail</div>
+                                    <div class="activity-subtitle">
+                                        @login.ClientName
+                                        <span class="activity-time">• @login.LoginTime.ToString("HH:mm")</span>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="empty-state">
+                        <i class="fas fa-inbox"></i>
+                        <p>Aucune activité récente</p>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Client Applications -->
+        <div class="dashboard-card">
+            <div class="card-header">
+                <h2 class="card-title">
+                    <i class="fas fa-desktop"></i>
+                    Applications clientes
+                </h2>
+                <a href="/ClientApplications" class="btn-link">Gérer</a>
+            </div>
+            <div class="card-body">
+                <div class="app-list">
+                    @foreach (var app in Model.ClientApplications)
+                    {
+                        <div class="app-item">
+                            <div class="app-icon" style="background: @app.Color">
+                                <i class="@app.Icon"></i>
+                            </div>
+                            <div class="app-content">
+                                <div class="app-name">@app.Name</div>
+                                <div class="app-stats">
+                                    <span class="badge badge-sm @(app.IsActive ? "badge-success" : "badge-secondary")">
+                                        @(app.IsActive ? "Active" : "Inactive")
+                                    </span>
+                                    <span class="text-muted">• @app.UsersToday utilisateurs aujourd'hui</span>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Roles Overview -->
+    <div class="dashboard-card">
+        <div class="card-header">
+            <h2 class="card-title">
+                <i class="fas fa-user-shield"></i>
+                Rôles et permissions
+            </h2>
+            <a href="/Roles" class="btn-link">Gérer les rôles</a>
+        </div>
+        <div class="card-body">
+            <div class="roles-grid">
+                @foreach (var role in Model.Roles)
+                {
+                    <div class="role-card">
+                        <div class="role-header">
+                            <div class="role-name">@role.Name</div>
+                            <div class="role-count">@role.UserCount</div>
+                        </div>
+                        <div class="role-body">
+                            <div class="role-permissions">
+                                @role.PermissionCount permissions
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 2rem;
+        }
+
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin: 0 0 0.5rem 0;
+        }
+
+        .page-subtitle {
+            color: #64748b;
+            margin: 0;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            display: flex;
+            gap: 1rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .stat-primary .stat-icon { background: linear-gradient(135deg, #1e3a8a, #3b82f6); }
+        .stat-success .stat-icon { background: linear-gradient(135deg, #065f46, #10b981); }
+        .stat-info .stat-icon { background: linear-gradient(135deg, #0c4a6e, #0284c7); }
+        .stat-warning .stat-icon { background: linear-gradient(135deg, #92400e, #f59e0b); }
+
+        .stat-content {
+            flex: 1;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: #64748b;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-trend {
+            font-size: 0.875rem;
+            color: #10b981;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .dashboard-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .card-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin: 0;
+        }
+
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        .activity-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .activity-item {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            background: #f0fdf4;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .activity-content {
+            flex: 1;
+        }
+
+        .activity-title {
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 0.25rem;
+        }
+
+        .activity-subtitle {
+            font-size: 0.875rem;
+            color: #64748b;
+        }
+
+        .activity-time {
+            color: #94a3b8;
+        }
+
+        .app-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .app-item {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem;
+            border-radius: 8px;
+            background: #f8fafc;
+            transition: background 0.2s;
+        }
+
+        .app-item:hover {
+            background: #f1f5f9;
+        }
+
+        .app-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
+
+        .app-content {
+            flex: 1;
+        }
+
+        .app-name {
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 0.25rem;
+        }
+
+        .app-stats {
+            font-size: 0.875rem;
+            color: #64748b;
+        }
+
+        .roles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .role-card {
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1rem;
+            transition: border-color 0.2s, transform 0.2s;
+        }
+
+        .role-card:hover {
+            border-color: #1e3a8a;
+            transform: translateY(-2px);
+        }
+
+        .role-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .role-name {
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .role-count {
+            background: #1e3a8a;
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .role-permissions {
+            font-size: 0.875rem;
+            color: #64748b;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #94a3b8;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .badge {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .badge-success {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .badge-secondary {
+            background: #f1f5f9;
+            color: #64748b;
+        }
+
+        .badge-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+        }
+
+        .btn-link {
+            color: #1e3a8a;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.875rem;
+            transition: color 0.2s;
+        }
+
+        .btn-link:hover {
+            color: #3b82f6;
+        }
+    </style>
+}

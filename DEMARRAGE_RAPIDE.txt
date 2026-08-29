@@ -1,0 +1,83 @@
+═══════════════════════════════════════════════════════════
+🚀 DÉMARRAGE RAPIDE - SYSTÈME SSO ONEE
+═══════════════════════════════════════════════════════════
+
+📋 ÉTAPE 1 : LANCER TOUS LES SERVEURS
+─────────────────────────────────────────────────────────────
+cd c:\Users\XPS\source\repos\ONEE.SSO
+.\LANCER_TOUS_LES_SERVEURS.ps1
+
+⏳ Attendre 30 secondes que tous les serveurs démarrent
+
+═══════════════════════════════════════════════════════════
+
+📋 ÉTAPE 2 : TESTER L'APPLICATION GESTION PERSONNEL
+─────────────────────────────────────────────────────────────
+1. Ouvrir : http://localhost:5173
+2. Cliquer : "Se connecter avec ONEE SSO"
+3. Login : admin@onee.ma / Admin@123
+4. ✅ Vérifier : Dashboard s'affiche
+5. ✅ Vérifier : Console DevTools (F12) montre les claims
+
+═══════════════════════════════════════════════════════════
+
+📋 ÉTAPE 3 : TESTER L'APPLICATION TIMS (Custom Claims)
+─────────────────────────────────────────────────────────────
+1. Nouvel onglet : http://localhost:XXXX (voir terminal TIMS)
+2. Se connecter avec SSO
+3. ✅ Vérifier : Console DevTools montre :
+   - tims_user_id
+   - tims_service_id
+   - tims_team_id
+4. ✅ Vérifier : Network (F12) montre headers X-TIMS-*
+
+═══════════════════════════════════════════════════════════
+
+📋 ÉTAPE 4 : TESTER L'APPLICATION EAMS (TypeScript + Custom Claims)
+─────────────────────────────────────────────────────────────
+1. Nouvel onglet : http://localhost:XXXX (voir terminal EAMS)
+2. Se connecter avec SSO
+3. ✅ Vérifier : Console DevTools montre :
+   - eams_user_id
+   - serviceId
+4. ✅ Vérifier : Network (F12) montre headers X-EAMS-*
+
+═══════════════════════════════════════════════════════════
+
+📋 ÉTAPE 5 : TEST CROSS-APPLICATION (SSO COMPLET)
+─────────────────────────────────────────────────────────────
+1. Se connecter sur Gestion Personnel
+2. Ouvrir TIMS (nouvel onglet)
+   ✅ Login automatique sans ressaisir le mot de passe
+3. Ouvrir EAMS (nouvel onglet)
+   ✅ Login automatique
+4. Se déconnecter de Gestion Personnel
+   ✅ Les 3 apps sont déconnectées
+
+═══════════════════════════════════════════════════════════
+
+🎯 RÉSULTAT ATTENDU
+─────────────────────────────────────────────────────────────
+✅ Login une fois → Accès aux 3 applications
+✅ Custom claims TIMS et EAMS fonctionnent
+✅ Logout révoque toutes les sessions
+✅ Tokens automatiquement ajoutés aux requêtes
+
+═══════════════════════════════════════════════════════════
+
+📚 DOCUMENTATION COMPLÈTE
+─────────────────────────────────────────────────────────────
+- GUIDE_TESTS_E2E.md           : Guide complet étape par étape
+- COMMANDES_MANUELLES.md       : Lancement manuel des serveurs
+- RAPPORT_VERIFICATION_FINAL.md : Rapport de vérification complet
+
+═══════════════════════════════════════════════════════════
+
+🔑 IDENTIFIANTS
+─────────────────────────────────────────────────────────────
+Email    : admin@onee.ma
+Password : Admin@123
+
+═══════════════════════════════════════════════════════════
+
+🎉 SYSTÈME PRÊT POUR LA SOUTENANCE ! 🚀

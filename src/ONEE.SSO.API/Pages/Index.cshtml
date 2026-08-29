@@ -1,0 +1,44 @@
+@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Accueil";
+}
+
+<div class="onee-card">
+    <div class="onee-card-header">
+        <div class="onee-logo">
+            <i class="fas fa-shield-halved"></i>
+        </div>
+        <h1 class="onee-title">ONEE SSO</h1>
+        <p class="onee-subtitle">Système d'Authentification Unique</p>
+    </div>
+
+    <div class="onee-alert onee-alert-success">
+        <i class="fas fa-check-circle"></i>
+        Interface SSO ONEE installée avec succès !
+    </div>
+
+    <div class="mt-4">
+        <p class="onee-text-center onee-text-muted mb-3">
+            Bienvenue sur le serveur d'authentification centralisé de l'ONEE.
+        </p>
+        
+        <a href="/Login" class="onee-btn onee-btn-primary">
+            <i class="fas fa-sign-in-alt"></i>
+            Se connecter
+        </a>
+        
+        <div class="mt-3">
+            <a href="/swagger" class="onee-btn onee-btn-secondary">
+                <i class="fas fa-code"></i>
+                Documentation API
+            </a>
+        </div>
+    </div>
+
+    <div class="onee-footer">
+        <p class="onee-footer-text">
+            © 2026 ONEE - Office National de l'Électricité et de l'Eau Potable
+        </p>
+    </div>
+</div>

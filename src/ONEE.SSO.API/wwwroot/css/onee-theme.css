@@ -1,0 +1,472 @@
+/* ============================================
+   ONEE SSO - DESIGN SYSTEM
+   Theme couleurs ONEE : Bleu, Vert, Blanc
+   ============================================ */
+
+:root {
+    /* Couleurs principales ONEE */
+    --onee-primary: #1e3a8a;        /* Bleu ONEE foncé */
+    --onee-primary-light: #3b82f6;  /* Bleu clair */
+    --onee-primary-dark: #1e40af;   /* Bleu très foncé */
+    --onee-secondary: #10b981;      /* Vert ONEE */
+    --onee-secondary-light: #34d399;/* Vert clair */
+    --onee-accent: #f59e0b;         /* Orange accent */
+    
+    /* Couleurs d'état */
+    --onee-success: #10b981;
+    --onee-warning: #f59e0b;
+    --onee-danger: #ef4444;
+    --onee-info: #3b82f6;
+    
+    /* Couleurs neutres */
+    --onee-dark: #1f2937;
+    --onee-gray: #6b7280;
+    --onee-gray-light: #f3f4f6;
+    --onee-white: #ffffff;
+    
+    /* Ombres */
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    
+    /* Spacing */
+    --spacing-xs: 0.25rem;
+    --spacing-sm: 0.5rem;
+    --spacing-md: 1rem;
+    --spacing-lg: 1.5rem;
+    --spacing-xl: 2rem;
+    --spacing-2xl: 3rem;
+    
+    /* Border radius */
+    --radius-sm: 0.25rem;
+    --radius-md: 0.375rem;
+    --radius-lg: 0.5rem;
+    --radius-xl: 0.75rem;
+    --radius-2xl: 1rem;
+}
+
+/* ============================================
+   RESET & BASE
+   ============================================ */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    color: var(--onee-dark);
+    line-height: 1.6;
+}
+
+/* ============================================
+   LAYOUT
+   ============================================ */
+
+.onee-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: var(--spacing-md);
+}
+
+.onee-page-wrapper {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-lg);
+}
+
+/* ============================================
+   CARDS & CONTAINERS
+   ============================================ */
+
+.onee-card {
+    background: var(--onee-white);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-xl);
+    padding: var(--spacing-2xl);
+    width: 100%;
+    max-width: 450px;
+}
+
+.onee-card-header {
+    text-align: center;
+    margin-bottom: var(--spacing-xl);
+}
+
+.onee-logo {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto var(--spacing-md);
+    background: linear-gradient(135deg, var(--onee-primary), var(--onee-primary-light));
+    border-radius: var(--radius-2xl);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--onee-white);
+    font-size: 2.5rem;
+    box-shadow: var(--shadow-lg);
+}
+
+.onee-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--onee-dark);
+    margin-bottom: var(--spacing-sm);
+}
+
+.onee-subtitle {
+    font-size: 0.95rem;
+    color: var(--onee-gray);
+    font-weight: 400;
+}
+
+/* ============================================
+   FORMS
+   ============================================ */
+
+.onee-form-group {
+    margin-bottom: var(--spacing-lg);
+}
+
+.onee-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--onee-dark);
+    margin-bottom: var(--spacing-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.onee-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    border: 2px solid #e5e7eb;
+    border-radius: var(--radius-lg);
+    transition: all 0.3s ease;
+    background: var(--onee-white);
+    color: var(--onee-dark);
+}
+
+.onee-input:focus {
+    outline: none;
+    border-color: var(--onee-primary);
+    box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+}
+
+.onee-input.error {
+    border-color: var(--onee-danger);
+}
+
+.onee-input-group {
+    position: relative;
+}
+
+.onee-input-icon {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--onee-gray);
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.onee-input-icon:hover {
+    color: var(--onee-primary);
+}
+
+.onee-error-message {
+    display: block;
+    margin-top: var(--spacing-sm);
+    font-size: 0.875rem;
+    color: var(--onee-danger);
+    font-weight: 500;
+}
+
+/* ============================================
+   BUTTONS
+   ============================================ */
+
+.onee-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: var(--radius-lg);
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    width: 100%;
+    gap: 0.5rem;
+}
+
+.onee-btn-primary {
+    background: linear-gradient(135deg, var(--onee-primary), var(--onee-primary-light));
+    color: var(--onee-white);
+    box-shadow: var(--shadow-md);
+}
+
+.onee-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.onee-btn-primary:active {
+    transform: translateY(0);
+}
+
+.onee-btn-secondary {
+    background: var(--onee-gray-light);
+    color: var(--onee-dark);
+}
+
+.onee-btn-secondary:hover {
+    background: #e5e7eb;
+}
+
+.onee-btn-success {
+    background: linear-gradient(135deg, var(--onee-secondary), var(--onee-secondary-light));
+    color: var(--onee-white);
+}
+
+.onee-btn-danger {
+    background: var(--onee-danger);
+    color: var(--onee-white);
+}
+
+.onee-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ============================================
+   ALERTS & MESSAGES
+   ============================================ */
+
+.onee-alert {
+    padding: 1rem;
+    border-radius: var(--radius-md);
+    margin-bottom: var(--spacing-lg);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.95rem;
+}
+
+.onee-alert-success {
+    background: #d1fae5;
+    color: #065f46;
+    border-left: 4px solid var(--onee-success);
+}
+
+.onee-alert-error {
+    background: #fee2e2;
+    color: #991b1b;
+    border-left: 4px solid var(--onee-danger);
+}
+
+.onee-alert-warning {
+    background: #fef3c7;
+    color: #92400e;
+    border-left: 4px solid var(--onee-warning);
+}
+
+.onee-alert-info {
+    background: #dbeafe;
+    color: #1e3a8a;
+    border-left: 4px solid var(--onee-info);
+}
+
+/* ============================================
+   LINKS
+   ============================================ */
+
+.onee-link {
+    color: var(--onee-primary);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+
+.onee-link:hover {
+    color: var(--onee-primary-light);
+    text-decoration: underline;
+}
+
+.onee-text-center {
+    text-align: center;
+}
+
+.onee-text-muted {
+    color: var(--onee-gray);
+    font-size: 0.9rem;
+}
+
+/* ============================================
+   DIVIDERS
+   ============================================ */
+
+.onee-divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: var(--spacing-lg) 0;
+}
+
+.onee-divider::before,
+.onee-divider::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.onee-divider span {
+    padding: 0 var(--spacing-md);
+    color: var(--onee-gray);
+    font-size: 0.875rem;
+    text-transform: uppercase;
+}
+
+/* ============================================
+   BADGES
+   ============================================ */
+
+.onee-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: var(--radius-md);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.onee-badge-primary {
+    background: var(--onee-primary-light);
+    color: var(--onee-white);
+}
+
+.onee-badge-success {
+    background: var(--onee-success);
+    color: var(--onee-white);
+}
+
+.onee-badge-warning {
+    background: var(--onee-warning);
+    color: var(--onee-white);
+}
+
+.onee-badge-danger {
+    background: var(--onee-danger);
+    color: var(--onee-white);
+}
+
+/* ============================================
+   LOADING SPINNER
+   ============================================ */
+
+.onee-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: var(--onee-white);
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ============================================
+   FOOTER
+   ============================================ */
+
+.onee-footer {
+    text-align: center;
+    margin-top: var(--spacing-xl);
+    padding-top: var(--spacing-lg);
+    border-top: 1px solid #e5e7eb;
+}
+
+.onee-footer-text {
+    font-size: 0.875rem;
+    color: var(--onee-gray);
+}
+
+.onee-footer-icon {
+    color: var(--onee-danger);
+    margin: 0 0.25rem;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 768px) {
+    .onee-page-wrapper {
+        padding: var(--spacing-md);
+    }
+    
+    .onee-card {
+        padding: var(--spacing-lg);
+        max-width: 100%;
+    }
+    
+    .onee-title {
+        font-size: 1.5rem;
+    }
+    
+    .onee-logo {
+        width: 60px;
+        height: 60px;
+        font-size: 2rem;
+    }
+}
+
+/* ============================================
+   UTILITIES
+   ============================================ */
+
+.mt-1 { margin-top: var(--spacing-xs); }
+.mt-2 { margin-top: var(--spacing-sm); }
+.mt-3 { margin-top: var(--spacing-md); }
+.mt-4 { margin-top: var(--spacing-lg); }
+.mt-5 { margin-top: var(--spacing-xl); }
+
+.mb-1 { margin-bottom: var(--spacing-xs); }
+.mb-2 { margin-bottom: var(--spacing-sm); }
+.mb-3 { margin-bottom: var(--spacing-md); }
+.mb-4 { margin-bottom: var(--spacing-lg); }
+.mb-5 { margin-bottom: var(--spacing-xl); }
+
+.text-center { text-align: center; }
+.text-left { text-align: left; }
+.text-right { text-align: right; }
+
+.d-none { display: none; }
+.d-block { display: block; }
+.d-flex { display: flex; }
+.d-inline-flex { display: inline-flex; }
+
+.justify-center { justify-content: center; }
+.justify-between { justify-content: space-between; }
+.align-center { align-items: center; }
+
+.w-full { width: 100%; }
+.h-full { height: 100%; }

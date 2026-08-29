@@ -9,6 +9,12 @@ public interface IJwtService
         string email,
         IEnumerable<string> roles,
         IEnumerable<string> permissions);
+    
+    string GenerateIdToken(
+        Guid userId,
+        string email,
+        string? fullName,
+        string clientId);
         
     ClaimsPrincipal? ValidateToken(string token);
     

@@ -23,7 +23,7 @@ public static class ClientApplicationsSeeder
             return;
 
         var passwordHasher = new BCryptPasswordHasher();
-        var clientSecret = "gestion-personnel-secret-2024"; // Secret pour dev
+        var clientSecret = "secret-gestion-personnel-2024";
         var hashedSecret = passwordHasher.Hash(clientSecret);
 
         context.ClientApplications.Add(new ClientApplication
@@ -35,18 +35,14 @@ public static class ClientApplicationsSeeder
             RedirectUri = "http://localhost:5173/callback",
             PostLogoutRedirectUri = "http://localhost:5173/login",
             
-            // Scopes selon la fiche de l'application
             AllowedScopes = "openid profile email roles offline_access gestion-personnel",
             
             AllowedGrantTypes = "authorization_code refresh_token",
             
-            RequirePkce = true,
-            RequireConsent = false,
+            RequirePkce = false,
+            RequireConsent = true,
             
-            // 15 minutes access token
             AccessTokenLifetime = 900,
-            
-            // 30 jours refresh token
             RefreshTokenLifetime = 2592000,
             
             IsActive = true,
@@ -62,7 +58,7 @@ public static class ClientApplicationsSeeder
             return;
 
         var passwordHasher = new BCryptPasswordHasher();
-        var clientSecret = "tims-app-secret-2024"; // Secret pour dev
+        var clientSecret = "secret-tims-2024";
         var hashedSecret = passwordHasher.Hash(clientSecret);
 
         context.ClientApplications.Add(new ClientApplication
@@ -71,21 +67,17 @@ public static class ClientApplicationsSeeder
             Name = "ONEE TIMS",
             ClientId = clientId,
             ClientSecret = hashedSecret,
-            RedirectUri = "http://localhost:5173/callback",
-            PostLogoutRedirectUri = "http://localhost:5173/login",
+            RedirectUri = "http://localhost:5175/callback",
+            PostLogoutRedirectUri = "http://localhost:5175/login",
             
-            // Scopes custom pour TIMS selon la fiche
-            AllowedScopes = "openid profile email roles offline_access tims_user_id tims_service_id tims_team_id tims_roles",
+            AllowedScopes = "openid profile email roles offline_access tims tims_user_id tims_service_id tims_team_id",
             
             AllowedGrantTypes = "authorization_code refresh_token",
             
-            RequirePkce = true,
-            RequireConsent = false,
+            RequirePkce = false,
+            RequireConsent = true,
             
-            // 60 minutes access token (1 heure)
             AccessTokenLifetime = 3600,
-            
-            // 24 heures refresh token
             RefreshTokenLifetime = 86400,
             
             IsActive = true,
@@ -101,7 +93,7 @@ public static class ClientApplicationsSeeder
             return;
 
         var passwordHasher = new BCryptPasswordHasher();
-        var clientSecret = "eams-spa-secret-2024"; // Secret pour dev
+        var clientSecret = "secret-eams-2024";
         var hashedSecret = passwordHasher.Hash(clientSecret);
 
         context.ClientApplications.Add(new ClientApplication
@@ -110,21 +102,17 @@ public static class ClientApplicationsSeeder
             Name = "ONEE EAMS",
             ClientId = clientId,
             ClientSecret = hashedSecret,
-            RedirectUri = "http://localhost:5173/auth/callback",
-            PostLogoutRedirectUri = "http://localhost:5173/login",
+            RedirectUri = "http://localhost:5174/callback",
+            PostLogoutRedirectUri = "http://localhost:5174/login",
             
-            // Scopes custom pour EAMS selon la fiche
             AllowedScopes = "openid profile email roles offline_access eams eams_user_id serviceId",
             
             AllowedGrantTypes = "authorization_code refresh_token",
             
-            RequirePkce = true,
-            RequireConsent = false,
+            RequirePkce = false,
+            RequireConsent = true,
             
-            // 30 minutes access token
             AccessTokenLifetime = 1800,
-            
-            // 30 jours refresh token
             RefreshTokenLifetime = 2592000,
             
             IsActive = true,

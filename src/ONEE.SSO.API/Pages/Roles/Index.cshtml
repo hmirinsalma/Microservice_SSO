@@ -1,0 +1,599 @@
+@page
+@model ONEE.SSO.API.Pages.Roles.IndexModel
+@{
+    ViewData["Title"] = "Gestion des Rôles";
+    Layout = "_AdminLayout";
+}
+
+<div class="admin-container">
+    <!-- Header -->
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">
+                <i class="fas fa-user-shield"></i>
+                Gestion des Rôles
+            </h1>
+            <p class="page-subtitle">Gérer les rôles et permissions</p>
+        </div>
+        <div class="page-actions">
+            <button class="btn btn-primary" onclick="openCreateModal()">
+                <i class="fas fa-plus"></i>
+                Nouveau rôle
+            </button>
+        </div>
+    </div>
+
+    <!-- Roles Grid -->
+    <div class="roles-grid">
+        @foreach (var role in Model.Roles)
+        {
+            <div class="role-card">
+                <div class="role-card-header">
+                    <div class="role-info">
+                        <h3 class="role-name">@role.Name</h3>
+                        <p class="role-description">@role.Description</p>
+                    </div>
+                    <div class="role-actions">
+                        <button class="btn-icon" onclick="openEditModal('@role.Id', '@role.Name', '@role.Description')" title="Modifier">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn-icon btn-danger" onclick="confirmDelete('@role.Id', '@role.Name')" title="Supprimer">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="role-stats">
+                    <div class="role-stat">
+                        <i class="fas fa-users text-primary"></i>
+                        <span>@role.UserCount utilisateurs</span>
+                    </div>
+                    <div class="role-stat">
+                        <i class="fas fa-key text-success"></i>
+                        <span>@role.PermissionCount permissions</span>
+                    </div>
+                </div>
+
+                <div class="role-permissions">
+                    <h4 class="permissions-title">Permissions</h4>
+                    <div class="permissions-list">
+                        @foreach (var permission in role.Permissions.Take(6))
+                        {
+                            <span class="permission-badge">
+                                <i class="fas fa-check"></i> @permission
+                            </span>
+                        }
+                        @if (role.Permissions.Count > 6)
+                        {
+                            <span class="permission-badge more">+@(role.Permissions.Count - 6) plus</span>
+                        }
+                    </div>
+                </div>
+
+                <div class="role-footer">
+                    <button class="btn-link" onclick="openPermissionsModal('@role.Id', '@role.Name')">
+                        <i class="fas fa-cog"></i> Gérer les permissions
+                    </button>
+                </div>
+            </div>
+        }
+    </div>
+
+    @if (!Model.Roles.Any())
+    {
+        <div class="empty-state-card">
+            <i class="fas fa-user-shield"></i>
+            <h3>Aucun rôle trouvé</h3>
+            <p>Commencez par créer votre premier rôle</p>
+            <button class="btn btn-primary" onclick="openCreateModal()">
+                <i class="fas fa-plus"></i> Créer un rôle
+            </button>
+        </div>
+    }
+</div>
+
+<!-- Create/Edit Role Modal -->
+<div id="roleModal" class="modal">
+    <div class="modal-content modal-lg">
+        <div class="modal-header">
+            <h3 id="modalTitle">Nouveau rôle</h3>
+            <button class="btn-close" onclick="closeRoleModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <form method="post" asp-page-handler="SaveRole">
+            <input type="hidden" name="id" id="roleId" />
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Nom du rôle *</label>
+                    <input type="text" name="name" id="roleName" class="form-control" required />
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea name="description" id="roleDescription" class="form-control" rows="3"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeRoleModal()">Annuler</button>
+                <button type="submit" class="btn btn-primary">Enregistrer</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Manage Permissions Modal -->
+<div id="permissionsModal" class="modal">
+    <div class="modal-content modal-xl">
+        <div class="modal-header">
+            <h3>Gérer les permissions - <span id="permissionsRoleName"></span></h3>
+            <button class="btn-close" onclick="closePermissionsModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <form method="post" asp-page-handler="UpdatePermissions">
+            <input type="hidden" name="roleId" id="permissionsRoleId" />
+            <div class="modal-body">
+                <div class="permissions-grid">
+                    @foreach (var permission in Model.AllPermissions)
+                    {
+                        <label class="permission-checkbox">
+                            <input type="checkbox" name="permissions" value="@permission.Id" class="perm-check" />
+                            <div class="permission-card-small">
+                                <div class="permission-icon">
+                                    <i class="fas fa-@GetPermissionIcon(permission.Code)"></i>
+                                </div>
+                                <div class="permission-info">
+                                    <div class="permission-name">@permission.Name</div>
+                                    <div class="permission-code">@permission.Code</div>
+                                </div>
+                            </div>
+                        </label>
+                    }
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closePermissionsModal()">Annuler</button>
+                <button type="submit" class="btn btn-primary">Enregistrer</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="modal">
+    <div class="modal-content">
+        <h3><i class="fas fa-exclamation-triangle text-danger"></i> Confirmer la suppression</h3>
+        <p>Êtes-vous sûr de vouloir supprimer le rôle <strong id="deleteRoleName"></strong> ?</p>
+        <p class="text-warning">Cette action affectera tous les utilisateurs ayant ce rôle.</p>
+        <form method="post" asp-page-handler="Delete">
+            <input type="hidden" name="id" id="deleteRoleId" />
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" onclick="closeDeleteModal()">Annuler</button>
+                <button type="submit" class="btn btn-danger">Supprimer</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@functions {
+    string GetPermissionIcon(string code)
+    {
+        if (code.Contains("read")) return "eye";
+        if (code.Contains("write") || code.Contains("create")) return "edit";
+        if (code.Contains("delete")) return "trash";
+        if (code.Contains("dashboard")) return "tachometer-alt";
+        return "key";
+    }
+}
+
+@section Styles {
+    <style>
+        .admin-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 2rem;
+        }
+
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin: 0 0 0.5rem 0;
+        }
+
+        .page-subtitle {
+            color: #64748b;
+            margin: 0;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #64748b;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #dc2626;
+            color: white;
+        }
+
+        .roles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .role-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .role-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .role-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .role-info {
+            flex: 1;
+        }
+
+        .role-name {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin: 0 0 0.5rem 0;
+        }
+
+        .role-description {
+            color: #64748b;
+            margin: 0;
+            font-size: 0.875rem;
+        }
+
+        .role-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-icon {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            background: #f1f5f9;
+            color: #475569;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-icon:hover {
+            background: #e2e8f0;
+        }
+
+        .btn-icon.btn-danger:hover {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .role-stats {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background: #f8fafc;
+            border-radius: 8px;
+        }
+
+        .role-stat {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            color: #475569;
+        }
+
+        .text-primary { color: #1e3a8a; }
+        .text-success { color: #10b981; }
+        .text-danger { color: #dc2626; }
+        .text-warning { color: #f59e0b; }
+
+        .role-permissions {
+            margin-bottom: 1rem;
+        }
+
+        .permissions-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #475569;
+            margin: 0 0 0.5rem 0;
+        }
+
+        .permissions-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .permission-badge {
+            padding: 0.25rem 0.75rem;
+            background: #dbeafe;
+            color: #1e40af;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .permission-badge.more {
+            background: #f1f5f9;
+            color: #64748b;
+        }
+
+        .role-footer {
+            padding-top: 1rem;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .btn-link {
+            background: none;
+            border: none;
+            color: #1e3a8a;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 0;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-lg {
+            max-width: 600px;
+        }
+
+        .modal-xl {
+            max-width: 900px;
+        }
+
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            font-size: 1.25rem;
+        }
+
+        .btn-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #64748b;
+            cursor: pointer;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .modal-footer {
+            padding: 1.5rem;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #1e293b;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .permissions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+
+        .permission-checkbox {
+            cursor: pointer;
+        }
+
+        .permission-checkbox input {
+            display: none;
+        }
+
+        .permission-card-small {
+            padding: 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            display: flex;
+            gap: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .permission-checkbox input:checked + .permission-card-small {
+            border-color: #1e3a8a;
+            background: #dbeafe;
+        }
+
+        .permission-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            background: #f1f5f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #475569;
+            flex-shrink: 0;
+        }
+
+        .permission-info {
+            flex: 1;
+        }
+
+        .permission-name {
+            font-weight: 600;
+            color: #1e293b;
+            font-size: 0.875rem;
+        }
+
+        .permission-code {
+            color: #64748b;
+            font-size: 0.75rem;
+        }
+
+        .empty-state-card {
+            background: white;
+            border-radius: 12px;
+            padding: 4rem 2rem;
+            text-align: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .empty-state-card i {
+            font-size: 4rem;
+            color: #cbd5e1;
+            margin-bottom: 1rem;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 2rem;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        function openCreateModal() {
+            document.getElementById('modalTitle').textContent = 'Nouveau rôle';
+            document.getElementById('roleId').value = '';
+            document.getElementById('roleName').value = '';
+            document.getElementById('roleDescription').value = '';
+            document.getElementById('roleModal').classList.add('show');
+        }
+
+        function openEditModal(id, name, description) {
+            document.getElementById('modalTitle').textContent = 'Modifier le rôle';
+            document.getElementById('roleId').value = id;
+            document.getElementById('roleName').value = name;
+            document.getElementById('roleDescription').value = description;
+            document.getElementById('roleModal').classList.add('show');
+        }
+
+        function closeRoleModal() {
+            document.getElementById('roleModal').classList.remove('show');
+        }
+
+        function openPermissionsModal(roleId, roleName) {
+            document.getElementById('permissionsRoleId').value = roleId;
+            document.getElementById('permissionsRoleName').textContent = roleName;
+            
+            // Load current permissions via AJAX (TODO: implement)
+            
+            document.getElementById('permissionsModal').classList.add('show');
+        }
+
+        function closePermissionsModal() {
+            document.getElementById('permissionsModal').classList.remove('show');
+        }
+
+        function confirmDelete(roleId, roleName) {
+            document.getElementById('deleteRoleId').value = roleId;
+            document.getElementById('deleteRoleName').textContent = roleName;
+            document.getElementById('deleteModal').classList.add('show');
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').classList.remove('show');
+        }
+    </script>
+}

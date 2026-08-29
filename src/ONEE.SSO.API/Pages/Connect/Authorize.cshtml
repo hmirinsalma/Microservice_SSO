@@ -1,0 +1,150 @@
+@page
+@model AuthorizeModel
+@{
+    ViewData["Title"] = "Autorisation";
+}
+
+<div class="onee-card">
+    <!-- Header -->
+    <div class="onee-card-header">
+        <div class="onee-logo">
+            <i class="fas fa-shield-alt"></i>
+        </div>
+        <h1 class="onee-title">Autorisation requise</h1>
+        <p class="onee-subtitle">@Model.ClientName souhaite accéder à votre compte</p>
+    </div>
+
+    <!-- Informations utilisateur -->
+    <div class="onee-alert onee-alert-info">
+        <i class="fas fa-user"></i>
+        <span>Connecté en tant que <strong>@Model.UserEmail</strong></span>
+    </div>
+
+    <!-- Informations de l'application -->
+    <div class="mt-4">
+        <h3 style="font-size: 1rem; font-weight: 600; color: var(--onee-dark); margin-bottom: 1rem;">
+            <i class="fas fa-info-circle" style="color: var(--onee-primary);"></i>
+            Cette application demande l'accès à
+        </h3>
+
+        <div style="padding: 1.5rem; background: var(--onee-gray-light); border-radius: var(--radius-lg); border-left: 4px solid var(--onee-primary);">
+            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                <div style="width: 50px; height: 50px; background: linear-gradient(135deg, var(--onee-primary), var(--onee-primary-light)); border-radius: var(--radius-lg); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;">
+                    @if (Model.client_id == "gestion-personnel")
+                    {
+                        <i class="fas fa-users"></i>
+                    }
+                    else if (Model.client_id == "tims-app")
+                    {
+                        <i class="fas fa-tools"></i>
+                    }
+                    else if (Model.client_id == "eams-spa")
+                    {
+                        <i class="fas fa-cogs"></i>
+                    }
+                    else
+                    {
+                        <i class="fas fa-desktop"></i>
+                    }
+                </div>
+                <div>
+                    <div style="font-size: 1.1rem; font-weight: 600; color: var(--onee-dark);">
+                        @Model.ClientName
+                    </div>
+                    <div style="font-size: 0.85rem; color: var(--onee-gray);">
+                        Application ONEE
+                    </div>
+                </div>
+            </div>
+
+            @if (Model.RequestedScopes.Count > 0)
+            {
+                <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #d1d5db;">
+                    <div style="font-size: 0.9rem; font-weight: 600; color: var(--onee-dark); margin-bottom: 0.75rem;">
+                        Permissions demandées :
+                    </div>
+                    <ul style="margin: 0; padding-left: 1.5rem; list-style: none;">
+                        @foreach (var scopeItem in Model.RequestedScopes)
+                        {
+                            <li style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; color: var(--onee-gray);">
+                                <i class="fas fa-check-circle" style="color: var(--onee-success);"></i>
+                                <span>
+                                    @(scopeItem switch
+                                    {
+                                        "openid" => "Authentification unique (SSO)",
+                                        "profile" => "Accès à votre profil (nom, prénom)",
+                                        "email" => "Accès à votre adresse email",
+                                        "roles" => "Accès à vos rôles",
+                                        "permissions" => "Accès à vos permissions",
+                                        "offline_access" => "Maintenir la connexion",
+                                        _ => scopeItem.StartsWith("tims_") ? $"Informations TIMS : {scopeItem}" :
+                                             scopeItem.StartsWith("eams_") ? $"Informations EAMS : {scopeItem}" :
+                                             scopeItem
+                                    })
+                                </span>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Message de sécurité -->
+    <div class="mt-4">
+        <div class="onee-alert onee-alert-warning">
+            <i class="fas fa-exclamation-triangle"></i>
+            <div style="font-size: 0.9rem; line-height: 1.5;">
+                En autorisant cette application, vous lui permettez d'accéder aux informations listées ci-dessus.
+                Vous pourrez révoquer cet accès à tout moment depuis votre dashboard.
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulaire de consentement -->
+    <form method="post" class="mt-4">
+        <!-- Champs cachés pour conserver les paramètres OIDC -->
+        <input type="hidden" name="client_id" value="@Model.client_id" />
+        <input type="hidden" name="redirect_uri" value="@Model.redirect_uri" />
+        <input type="hidden" name="response_type" value="@Model.response_type" />
+        <input type="hidden" name="scope" value="@Model.scope" />
+        <input type="hidden" name="state" value="@Model.state" />
+        <input type="hidden" name="code_challenge" value="@Model.code_challenge" />
+        <input type="hidden" name="code_challenge_method" value="@Model.code_challenge_method" />
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <!-- Bouton Refuser -->
+            <button type="submit" name="action" value="deny" class="onee-btn onee-btn-secondary">
+                <i class="fas fa-times"></i>
+                Refuser
+            </button>
+
+            <!-- Bouton Autoriser -->
+            <button type="submit" name="action" value="allow" class="onee-btn onee-btn-primary">
+                <i class="fas fa-check"></i>
+                Autoriser
+            </button>
+        </div>
+    </form>
+
+    <!-- Lien de déconnexion -->
+    <div class="mt-4 text-center">
+        <p class="onee-text-muted" style="font-size: 0.85rem;">
+            Pas vous ? 
+            <a href="/Logout?return_url=@Uri.EscapeDataString(Request.QueryString.Value ?? "")" class="onee-link">
+                Se déconnecter
+            </a>
+        </p>
+    </div>
+
+    <!-- Footer -->
+    <div class="onee-footer">
+        <p class="onee-footer-text">
+            <i class="fas fa-shield-alt" style="color: var(--onee-success);"></i>
+            Connexion sécurisée par ONEE SSO
+        </p>
+        <p class="onee-footer-text mt-2">
+            Cette autorisation utilise le protocole OAuth 2.0 / OpenID Connect
+        </p>
+    </div>
+</div>
