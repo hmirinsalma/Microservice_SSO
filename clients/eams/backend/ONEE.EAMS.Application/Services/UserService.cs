@@ -85,7 +85,7 @@ public class UserService : IUserService
             Email = request.Email,
             Telephone = request.Telephone,
             Poste = request.Poste,
-            RoleMetier = request.Role,
+            Role = request.Role,
             ServiceId = request.ServiceId,
             IsActive = true,
             CreatedAt = DateTime.UtcNow
@@ -104,7 +104,7 @@ public class UserService : IUserService
         u.Prenom   = request.Prenom;
         u.Telephone = request.Telephone;
         u.Poste    = request.Poste;
-        u.RoleMetier = request.Role;
+        u.Role = request.Role;
         u.ServiceId = request.ServiceId;
         u.IsActive = request.IsActive;
         await _db.SaveChangesAsync();
@@ -121,5 +121,5 @@ public class UserService : IUserService
 
     private static UserDto MapDto(User u) =>
         new(u.Id, u.Nom, u.Prenom, u.Email, u.Telephone, u.Poste,
-            u.PhotoUrl, u.RoleMetier, u.ServiceId, u.Service?.Nom, u.IsActive);
+            u.PhotoUrl, u.Role, u.ServiceId, u.Service?.Nom, u.IsActive);
 }

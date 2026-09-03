@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using ONEE.SSO.API.Authorization;
 
 namespace ONEE.SSO.API.Pages;
 
+[SsoAdminRequired]
 public class SessionsModel : PageModel
 {
     public List<SessionDto> Sessions { get; set; } = new();
@@ -63,6 +65,41 @@ public class SessionsModel : PageModel
         
         TempData["SuccessMessage"] = "Toutes les sessions ont été révoquées";
         return RedirectToPage();
+    }
+
+    public IActionResult OnGetExportCsv(string? search, string? app)
+    {
+        // Get sessions with same filters
+        var allSessions = GenerateMockSessions();
+
+        // Apply filters
+        if (!string.IsNullOrEmpty(search))
+        {
+            allSessions = allSessions
+                .Where(s => s.UserEmail.Contains(search, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
+
+        if (!string.IsNullOrEmpty(app))
+        {
+            allSessions = allSessions
+                .Where(s => s.AppId == app)
+                .ToList();
+        }
+
+        // Generate CSV
+        var csv = new System.Text.StringBuilder();
+        csv.AppendLine("Email Utilisateur,Application,Adresse IP,Navigateur,Démarré le,Dernière activité,Durée (min)");
+
+        foreach (var session in allSessions)
+        {
+            csv.AppendLine($"\"{session.UserEmail}\",\"{session.AppName}\",\"{session.IpAddress}\",\"{session.BrowserName}\",\"{session.StartedAt:dd/MM/yyyy HH:mm:ss}\",\"{session.LastActivity:dd/MM/yyyy HH:mm:ss}\",\"{session.Duration}\"");
+        }
+
+        var fileName = $"sessions_actives_{DateTime.Now:yyyyMMdd_HHmmss}.csv";
+        var bytes = System.Text.Encoding.UTF8.GetBytes(csv.ToString());
+        
+        return File(bytes, "text/csv", fileName);
     }
 
     private List<SessionDto> GenerateMockSessions()

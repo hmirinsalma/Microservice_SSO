@@ -167,6 +167,8 @@ public class LoginCommandHandler
         var accessToken = _jwtService.GenerateAccessToken(
             user.Id,
             user.Email,
+            user.FirstName,
+            user.LastName,
             roles,
             permissions);
 

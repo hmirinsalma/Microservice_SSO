@@ -272,10 +272,12 @@
             cursor: pointer;
             transition: all 0.2s;
             position: relative;
+            text-decoration: none;
         }
 
         .quick-action:hover {
             background: #e2e8f0;
+            color: #1e3a8a;
         }
 
         .notification-badge {
@@ -385,10 +387,10 @@
                         Système actif
                     </span>
 
-                    <div class="quick-action">
+                    <a href="/Notifications" class="quick-action" title="Notifications">
                         <i class="fas fa-bell"></i>
-                        <span class="notification-badge">3</span>
-                    </div>
+                        @await Component.InvokeAsync("NotificationCount")
+                    </a>
 
                     <div class="user-menu">
                         <div class="user-avatar">AD</div>

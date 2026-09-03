@@ -125,9 +125,9 @@ export default function UsersPage() {
                         <div className="flex items-center gap-3">
                           <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0
                             ${u.isActive ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-500'}`}>
-                            {u.username?.charAt(0).toUpperCase()}
+                            {(u.username || u.email || 'U').charAt(0).toUpperCase()}
                           </div>
-                          <span className="text-sm font-semibold text-slate-900">{u.username}</span>
+                          <span className="text-sm font-semibold text-slate-900">{u.username || u.email}</span>
                         </div>
                       </td>
                       <td className="px-5 py-3.5 text-sm text-slate-500">{u.email}</td>

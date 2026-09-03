@@ -23,7 +23,7 @@ export default function AppRouter() {
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={isAuthenticated ? <Navigate to="/" replace /> : <LoginSSO />} />
-        <Route path="/callback" element={<Callback />} />
+        <Route path="/auth/callback" element={<Callback />} />
         <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
           <Route path="/" element={<Dashboard />} />
           <Route path="/equipements" element={<Equipements />} />

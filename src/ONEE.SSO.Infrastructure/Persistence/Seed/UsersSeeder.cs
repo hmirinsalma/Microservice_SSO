@@ -33,6 +33,7 @@ public static class UsersSeeder
             IsLocked = false,
             FailedLoginAttempts = 0,
             IsEmailVerified = true,
+            IsSsoAdmin = true, // 🔒 Seul admin@onee.ma est SSO Admin
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         };

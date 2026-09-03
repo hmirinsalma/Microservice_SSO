@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using ONEE.SSO.Application.Repositories;
+using ONEE.SSO.API.Authorization;
 
 namespace ONEE.SSO.API.Pages;
 
+[SsoAdminRequired]
 public class ClientApplicationsModel : PageModel
 {
     private readonly IClientApplicationRepository _clientApplicationRepository;

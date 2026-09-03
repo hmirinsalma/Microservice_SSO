@@ -42,7 +42,7 @@ public class AppDbContext : DbContext
             // PasswordHash supprimé — authentification déléguée au microservice SSO
             e.Property(x => x.SsoId).HasMaxLength(256);
             e.HasIndex(x => x.SsoId);
-            e.Property(x => x.RoleMetier).HasColumnName("RoleMetier").HasConversion<string>();
+            e.Property(x => x.Role).HasColumnName("Role").HasMaxLength(100);
 
             e.HasOne(x => x.Service)
                 .WithMany(s => s.Users)

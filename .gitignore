@@ -1,47 +1,192 @@
-# Build
+# ====================================
+# .NET / C# / ASP.NET Core
+# ====================================
 bin/
 obj/
-
-# Visual Studio
-.vs/
 *.user
 *.suo
 *.userosscache
 *.sln.docstates
+publish/
+*.nupkg
+[Pp]ackages/
+
+# ====================================
+# Entity Framework
+# ====================================
+*.mdf
+*.ldf
+Migrations/
+
+# ====================================
+# IDE / Editors
+# ====================================
+# Visual Studio
+.vs/
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.ilk
+*.meta
+*.obj
+*.idb
+*.cachefile
+*.VC.db
+*.VC.VC.opendb
+ipch/
+*.aps
+*.ncb
+*.opensdf
+*.sdf
+*.cachefile
+*.VC.VC.opendb
 
 # Rider
 .idea/
+*.sln.iml
 
 # VS Code
 .vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
 
+# ====================================
+# Node.js / React / Frontend
+# ====================================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+dist/
+build/
+.cache/
+.parcel-cache/
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.tsbuildinfo
+
+# ====================================
 # Logs
+# ====================================
 Logs/
+logs/
 *.log
+npm-debug.log*
+yarn-debug.log*
+lerna-debug.log*
+pnpm-debug.log*
 
-# NuGet
-*.nupkg
-
-# EF Core local database
-*.mdf
-*.ldf
-
-# OS
+# ====================================
+# OS Files
+# ====================================
 Thumbs.db
 Desktop.ini
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 
-# Secrets
+# ====================================
+# Secrets & Configuration
+# ====================================
+*.env
+.env
 appsettings.Development.json
+appsettings.Local.json
+secrets.json
+*.key
+*.pem
+*.pfx
 
-# Publish
-publish/
-
+# ====================================
 # Test Results
+# ====================================
 TestResults/
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+*.trx
+*.coverage
+*.coveragexml
 
-# Generated
-Generated/
-
+# ====================================
 # ReSharper
+# ====================================
 _ReSharper*/
 *.DotSettings.user
+
+# ====================================
+# AI / Development Tools
+# ====================================
+.kiro/
+
+# ====================================
+# Temporary / Cache
+# ====================================
+*.tmp
+*.temp
+*.cache
+*.swp
+*~
+.vs/
+Generated/
+
+# ====================================
+# Documentation temporaire (dev)
+# ====================================
+AUDIT_*.md
+CHANGELOG_*.md
+CHECK_*.md
+DEBUG_*.md
+DIAGNOSTIC_*.txt
+ETAPE*.md
+FIX_*.md
+GUIDE_*.md
+PLAN_*.md
+RAPPORT_*.md
+RESUME_*.md
+STATUS_*.md
+TEST_*.md
+VERIF_*.md
+*_output.txt
+RESULTAT_*.txt
+*.bak
+*.old
+
+# ====================================
+# Scripts temporaires
+# ====================================
+*_TEMP.ps1
+*_TEST.ps1
+*_DEBUG.ps1
+CREATE_*_USER*.ps1
+FIX_*.ps1
+VERIF_*.ps1
+AUDIT_*.sql
+CHECK_*.sql
+DEBUG_*.sql
+FIX_*.sql
+TEST_*.sql
+VERIF_*.sql
+CLEANUP_*.ps1
+
+# ====================================
+# Rapport LaTeX (université)
+# ====================================
+rapport_*.tex
+rapport_screenshots/
+*.aux
+*.log
+*.out
+*.toc
+*.synctex.gz
+*.fdb_latexmk
+*.fls

@@ -1,0 +1,200 @@
+@page
+@model ONEE.SSO.API.Pages.NotificationsModel
+@{
+    ViewData["Title"] = "Notifications";
+    Layout = "_AdminLayout";
+}
+
+<div class="admin-container">
+    <!-- Header -->
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">
+                <i class="fas fa-bell"></i>
+                Notifications
+            </h1>
+            <p class="page-subtitle">Centre de notifications du système SSO</p>
+        </div>
+    </div>
+
+    <!-- Notifications List -->
+    <div class="notifications-container">
+        @if (Model.Notifications.Any())
+        {
+            @foreach (var notification in Model.Notifications)
+            {
+                <div class="notification-card @(notification.IsRead ? "read" : "unread")">
+                    <div class="notification-icon">
+                        <i class="fas fa-@GetNotificationIcon(notification.Type)"></i>
+                    </div>
+                    <div class="notification-content">
+                        <div class="notification-title">@notification.Title</div>
+                        <div class="notification-message">@notification.Message</div>
+                        <div class="notification-time">
+                            <i class="fas fa-clock"></i>
+                            @notification.CreatedAt.ToString("dd/MM/yyyy HH:mm")
+                        </div>
+                    </div>
+                    @if (!notification.IsRead)
+                    {
+                        <button class="mark-read-btn" title="Marquer comme lu">
+                            <i class="fas fa-check"></i>
+                        </button>
+                    }
+                </div>
+            }
+        }
+        else
+        {
+            <div class="empty-state">
+                <i class="fas fa-bell-slash"></i>
+                <h3>Aucune notification</h3>
+                <p>Vous êtes à jour !</p>
+            </div>
+        }
+    </div>
+</div>
+
+@functions {
+    string GetNotificationIcon(string type)
+    {
+        return type switch
+        {
+            "info" => "info-circle",
+            "success" => "check-circle",
+            "warning" => "exclamation-triangle",
+            "error" => "times-circle",
+            _ => "bell"
+        };
+    }
+}
+
+@section Styles {
+    <style>
+        .admin-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .page-header {
+            margin-bottom: 2rem;
+        }
+
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin: 0 0 0.5rem 0;
+        }
+
+        .page-subtitle {
+            color: #64748b;
+            margin: 0;
+        }
+
+        .notifications-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .notification-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            display: flex;
+            gap: 1rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: all 0.2s;
+        }
+
+        .notification-card.unread {
+            border-left: 4px solid #3b82f6;
+            background: #eff6ff;
+        }
+
+        .notification-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .notification-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: #dbeafe;
+            color: #1e40af;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
+
+        .notification-content {
+            flex: 1;
+        }
+
+        .notification-title {
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 0.25rem;
+        }
+
+        .notification-message {
+            color: #64748b;
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .notification-time {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .mark-read-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background: #f1f5f9;
+            border: none;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex-shrink: 0;
+            align-self: flex-start;
+        }
+
+        .mark-read-btn:hover {
+            background: #10b981;
+            color: white;
+        }
+
+        .empty-state {
+            background: white;
+            border-radius: 12px;
+            padding: 4rem 2rem;
+            text-align: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            color: #cbd5e1;
+            margin-bottom: 1rem;
+        }
+
+        .empty-state h3 {
+            color: #475569;
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-state p {
+            color: #94a3b8;
+        }
+    </style>
+}

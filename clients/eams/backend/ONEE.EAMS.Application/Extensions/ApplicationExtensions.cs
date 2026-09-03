@@ -14,6 +14,10 @@ public static class ApplicationExtensions
         services.AddScoped<INotificationService, NotificationService>();
         services.AddScoped<IDashboardService, DashboardService>();
         services.AddScoped<IUserService, UserService>();
+        
+        // 🎯 Service de provisioning automatique SSO
+        services.AddScoped<SsoProvisioningService>();
+        
         return services;
     }
 }

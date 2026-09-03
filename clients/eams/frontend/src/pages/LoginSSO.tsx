@@ -3,7 +3,21 @@ import authService from '../auth/authService';
 
 const LoginSSO: React.FC = () => {
   const handleLogin = () => {
-    authService.login();
+    // ✅ Vider le localStorage avant la redirection SSO
+    localStorage.clear();
+    sessionStorage.clear();
+    
+    // ✅ Redirection manuelle vers le SSO (comme TIMS)
+    const ssoUrl = 'http://localhost:5205/connect/authorize';
+    const params = new URLSearchParams({
+      client_id: 'eams-spa',
+      redirect_uri: 'http://localhost:5173/auth/callback',
+      response_type: 'code',
+      scope: 'openid profile email roles offline_access',
+      state: Math.random().toString(36).substring(7),
+    });
+    
+    window.location.href = `${ssoUrl}?${params.toString()}`;
   };
 
   return (

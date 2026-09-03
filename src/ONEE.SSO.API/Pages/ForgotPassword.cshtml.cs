@@ -24,16 +24,18 @@ public class ForgotPasswordModel : PageModel
 
     public string? ErrorMessage { get; set; }
     public string? SuccessMessage { get; set; }
+    public bool ShowSuccessMessage { get; set; }
 
     public void OnGet()
     {
+        // Page initiale
     }
 
     public async Task<IActionResult> OnPostAsync()
     {
         if (!ModelState.IsValid)
         {
-            ErrorMessage = "Veuillez saisir une adresse email valide.";
+            ErrorMessage = "Veuillez entrer une adresse email valide.";
             return Page();
         }
 
@@ -41,8 +43,12 @@ public class ForgotPasswordModel : PageModel
         {
             var client = _httpClientFactory.CreateClient();
             var baseUrl = _configuration["BaseUrl"] ?? "http://localhost:5205";
+            
+            var request = new
+            {
+                email = Email
+            };
 
-            var request = new { email = Email };
             var jsonContent = JsonSerializer.Serialize(request);
             var httpContent = new StringContent(jsonContent, Encoding.UTF8, "application/json");
 
@@ -50,18 +56,23 @@ public class ForgotPasswordModel : PageModel
 
             if (response.IsSuccessStatusCode)
             {
-                SuccessMessage = "Un email de réinitialisation a été envoyé à votre adresse si elle existe dans notre système.";
-                Email = string.Empty; // Vider le champ
+                ShowSuccessMessage = true;
+                SuccessMessage = "Un email de réinitialisation a été envoyé à votre adresse. Veuillez vérifier votre boîte de réception.";
+            }
+            else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                // Pour des raisons de sécurité, on affiche le même message même si l'email n'existe pas
+                ShowSuccessMessage = true;
+                SuccessMessage = "Si cette adresse email existe dans notre système, un email de réinitialisation a été envoyé.";
             }
             else
             {
-                // Pour des raisons de sécurité, on affiche toujours le même message
-                SuccessMessage = "Un email de réinitialisation a été envoyé à votre adresse si elle existe dans notre système.";
+                ErrorMessage = "Une erreur s'est produite. Veuillez réessayer plus tard.";
             }
         }
         catch (Exception ex)
         {
-            ErrorMessage = $"Erreur lors de l'envoi de la demande : {ex.Message}";
+            ErrorMessage = $"Erreur de connexion au serveur : {ex.Message}";
         }
 
         return Page();

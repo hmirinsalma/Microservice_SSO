@@ -3,7 +3,7 @@ import { UserManager, WebStorageStateStore } from 'oidc-client-ts';
 const AUTHORITY = 'http://localhost:5205';
 const CLIENT_ID = 'tims-app';
 const CLIENT_SECRET = 'secret-tims-2024';
-const REDIRECT_URI = 'http://localhost:5175/callback';
+const REDIRECT_URI = 'http://localhost:5175/auth/callback';
 const POST_LOGOUT_REDIRECT_URI = 'http://localhost:5175';
 const SILENT_REDIRECT_URI = 'http://localhost:5175/silent-renew.html';
 

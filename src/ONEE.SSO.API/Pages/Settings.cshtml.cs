@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Configuration;
+using ONEE.SSO.API.Authorization;
 
 namespace ONEE.SSO.API.Pages;
 
+[SsoAdminRequired]
 public class SettingsModel : PageModel
 {
     private readonly IConfiguration _configuration;

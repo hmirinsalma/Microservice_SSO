@@ -87,7 +87,9 @@ public class LoginModel : PageModel
                     HttpContext.Session.SetString("AccessToken", loginResponse.AccessToken);
                     HttpContext.Session.SetString("RefreshToken", loginResponse.RefreshToken);
                     HttpContext.Session.SetString("UserEmail", Email);
+                    HttpContext.Session.SetString("UserId", loginResponse.UserId.ToString()); // 🔑 Convertir Guid en string
 
+                    Console.WriteLine($"[LOGIN SUCCESS] UserId={loginResponse.UserId}, Email={Email}");
                     Console.WriteLine($"[LOGIN SUCCESS] Redirecting to: {ReturnUrl ?? "/Dashboard"}");
 
                     // Rediriger vers le dashboard ou l'URL de retour
@@ -101,7 +103,30 @@ public class LoginModel : PageModel
             }
             else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
             {
-                ErrorMessage = "Email ou mot de passe incorrect.";
+                var errorContent = await response.Content.ReadAsStringAsync();
+                
+                try
+                {
+                    // Essayer de parser le JSON de réponse pour voir si c'est un compte bloqué
+                    var errorResponse = JsonSerializer.Deserialize<ErrorResponse>(errorContent, new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
+
+                    if (errorResponse != null && !string.IsNullOrEmpty(errorResponse.Message))
+                    {
+                        ErrorMessage = errorResponse.Message;
+                    }
+                    else
+                    {
+                        ErrorMessage = "Email ou mot de passe incorrect.";
+                    }
+                }
+                catch
+                {
+                    // Si le parsing échoue, message générique
+                    ErrorMessage = "Email ou mot de passe incorrect.";
+                }
             }
             else
             {
@@ -136,5 +161,13 @@ public class LoginModel : PageModel
         public string RefreshToken { get; set; } = string.Empty;
         public int ExpiresIn { get; set; }
         public string TokenType { get; set; } = string.Empty;
+        public Guid UserId { get; set; } // 🔑 Type Guid comme dans l'API
+    }
+
+    private class ErrorResponse
+    {
+        public string Message { get; set; } = string.Empty;
+        public bool IsLocked { get; set; }
+        public bool IsInactive { get; set; }
     }
 }

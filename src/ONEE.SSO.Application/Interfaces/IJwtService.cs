@@ -7,14 +7,19 @@ public interface IJwtService
     string GenerateAccessToken(
         Guid userId,
         string email,
+        string? firstName,
+        string? lastName,
         IEnumerable<string> roles,
         IEnumerable<string> permissions);
     
     string GenerateIdToken(
         Guid userId,
         string email,
-        string? fullName,
-        string clientId);
+        string? firstName,
+        string? lastName,
+        string clientId,
+        IEnumerable<string>? roles = null,
+        IEnumerable<string>? permissions = null);
         
     ClaimsPrincipal? ValidateToken(string token);
     

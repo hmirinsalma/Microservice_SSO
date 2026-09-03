@@ -27,12 +27,48 @@ export function AuthProvider({ children }) {
       
       if (ssoUser && !ssoUser.expired) {
         // Utilisateur SSO authentifié
+        // ✅ FIX DASHBOARD 403: Les rôles peuvent être un tableau ou une valeur unique
+        const rolesRaw = ssoUser.profile.role;
+        const roles = Array.isArray(rolesRaw) ? rolesRaw : (rolesRaw ? [rolesRaw] : []);
+        
+        const permissionsRaw = ssoUser.profile.permission;
+        const permissions = Array.isArray(permissionsRaw) ? permissionsRaw : (permissionsRaw ? [permissionsRaw] : []);
+        
+        // ✅ FIX: Gérer le cas où name/email sont des arrays
+        const nameRaw = ssoUser.profile.name || ssoUser.profile.email;
+        const username = Array.isArray(nameRaw) ? nameRaw[0] : nameRaw;
+        
+        const emailRaw = ssoUser.profile.email;
+        const email = Array.isArray(emailRaw) ? emailRaw[0] : emailRaw;
+        
+        // ✅ Mapping des rôles SSO vers rôles RH locaux
+        const mapSsoRoleToRhRole = (role) => {
+          // ✅ FIX: Extraire le nom du rôle si format qualifié (Role@ClientId)
+          const roleName = role.includes('@') ? role.split('@')[0] : role;
+          const normalized = roleName.toLowerCase();
+          
+          if (normalized === 'chefservice') return 'ChefDeService';
+          if (normalized === 'chef_de_service') return 'ChefDeService';
+          if (normalized === 'directeurressources') return 'Directeur';
+          if (normalized === 'directeur') return 'Directeur';
+          if (normalized === 'administrateurrh') return 'AdministrateurRH';
+          if (normalized === 'employe') return 'Employe';
+          return roleName; // Si déjà au bon format
+        };
+        
+        // ✅ FIX: Filtrer pour ne prendre QUE le rôle RH (avec @gestion-personnel)
+        const rhRoles = roles.filter(r => r.includes('@gestion-personnel'));
+        console.log('🔍 AuthContext: Tous les rôles =', roles, ', Rôles RH =', rhRoles);
+        
+        const mappedRoles = (rhRoles.length > 0 ? rhRoles : roles).map(mapSsoRoleToRhRole);
+        const primaryRole = mappedRoles[0] || 'Employe';
+        
         const u = {
-          username: ssoUser.profile.name || ssoUser.profile.email,
-          email: ssoUser.profile.email,
-          role: ssoUser.profile.roles?.[0] || 'Employe',
-          roles: ssoUser.profile.roles || [],
-          permissions: ssoUser.profile.permissions || [],
+          username: username,
+          email: email,
+          role: primaryRole, // Premier rôle mappé
+          roles: mappedRoles, // Tous les rôles mappés
+          permissions: permissions,
           expiresAt: ssoUser.expires_at,
         };
         console.log('✅ AuthContext: User set:', u);

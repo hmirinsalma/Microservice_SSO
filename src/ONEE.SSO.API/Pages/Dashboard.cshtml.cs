@@ -1,22 +1,30 @@
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using ONEE.SSO.Application.Repositories;
+using ONEE.SSO.API.Authorization;
 
 namespace ONEE.SSO.API.Pages;
 
+[SsoAdminRequired]
 public class DashboardModel : PageModel
 {
     private readonly IUserRepository _userRepository;
     private readonly IClientApplicationRepository _clientApplicationRepository;
     private readonly IRoleRepository _roleRepository;
+    private readonly IUserRoleRepository _userRoleRepository;
+    private readonly IRolePermissionRepository _rolePermissionRepository;
 
     public DashboardModel(
         IUserRepository userRepository,
         IClientApplicationRepository clientApplicationRepository,
-        IRoleRepository roleRepository)
+        IRoleRepository roleRepository,
+        IUserRoleRepository userRoleRepository,
+        IRolePermissionRepository rolePermissionRepository)
     {
         _userRepository = userRepository;
         _clientApplicationRepository = clientApplicationRepository;
         _roleRepository = roleRepository;
+        _userRoleRepository = userRoleRepository;
+        _rolePermissionRepository = rolePermissionRepository;
     }
 
     // Statistics
@@ -67,14 +75,22 @@ public class DashboardModel : PageModel
             UsersToday = GetAppUsersToday(a.ClientId)
         }).ToList();
 
-        // Roles
+        // Roles - Load with permissions included
         var roles = await _roleRepository.GetAllAsync();
-        Roles = roles.Select(r => new RoleDto
+        Roles = new List<RoleDto>();
+        
+        foreach (var role in roles)
         {
-            Name = r.Name,
-            UserCount = r.UserRoles?.Count ?? 0,
-            PermissionCount = r.RolePermissions?.Count ?? 0
-        }).ToList();
+            var userRoles = await _userRoleRepository.GetByRoleIdAsync(role.Id);
+            var rolePermissions = await _rolePermissionRepository.GetByRoleIdAsync(role.Id);
+            
+            Roles.Add(new RoleDto
+            {
+                Name = role.Name,
+                UserCount = userRoles.Count(),
+                PermissionCount = rolePermissions.Count()
+            });
+        }
     }
 
     private string GetAppColor(string clientId) => clientId switch

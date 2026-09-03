@@ -14,6 +14,12 @@ public class User : BaseAuditableEntity
 
     public bool IsActive { get; set; } = true;
 
+    /// <summary>
+    /// Indique si l'utilisateur est un administrateur du SSO.
+    /// Seuls les SSO Admins peuvent accéder aux pages d'administration du SSO (Users, Roles, etc.)
+    /// </summary>
+    public bool IsSsoAdmin { get; set; } = false;
+
     // Security - Account Lockout
     public int FailedLoginAttempts { get; set; } = 0;
     public DateTime? LastFailedLoginAt { get; set; }

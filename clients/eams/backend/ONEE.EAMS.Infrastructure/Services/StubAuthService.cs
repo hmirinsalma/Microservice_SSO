@@ -81,7 +81,7 @@ public class StubAuthService : IAuthService
             new(JwtRegisteredClaimNames.Sub,   ssoSubject),
             new("eams_user_id",                user.Id.ToString()),
             new(ClaimTypes.Email,              user.Email),
-            new(ClaimTypes.Role,               user.RoleMetier.ToString()),
+            new(ClaimTypes.Role,               user.Role ?? "Technicien"),
             new("serviceId",                   user.ServiceId?.ToString() ?? ""),
             new("nom",                         user.Nom),
             new("prenom",                      user.Prenom),
@@ -92,7 +92,7 @@ public class StubAuthService : IAuthService
         var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
 
         return new LoginResponse(
-            tokenString, user.RoleMetier.ToString(),
+            tokenString, user.Role ?? "Technicien",
             user.Nom, user.Prenom, user.Email,
             user.Id, user.ServiceId, expiry);
     }

@@ -2,9 +2,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using ONEE.SSO.Application.Repositories;
 using ONEE.SSO.Domain.Entities;
+using ONEE.SSO.API.Authorization;
 
 namespace ONEE.SSO.API.Pages.Roles;
 
+[SsoAdminRequired]
 public class IndexModel : PageModel
 {
     private readonly IRoleRepository _roleRepository;
@@ -26,11 +28,16 @@ public class IndexModel : PageModel
 
     public List<RoleDto> Roles { get; set; } = new();
     public List<Permission> AllPermissions { get; set; } = new();
+    public List<ClientApplication> AllApplications { get; set; } = new();
 
     public async Task OnGetAsync()
     {
         var roles = await _roleRepository.GetAllAsync();
         AllPermissions = (await _permissionRepository.GetAllAsync()).ToList();
+        
+        // Load client applications
+        var clientAppRepo = HttpContext.RequestServices.GetRequiredService<IClientApplicationRepository>();
+        AllApplications = (await clientAppRepo.GetAllAsync()).ToList();
 
         Roles = new List<RoleDto>();
         foreach (var role in roles)
@@ -50,7 +57,7 @@ public class IndexModel : PageModel
         }
     }
 
-    public async Task<IActionResult> OnPostSaveRoleAsync(Guid? id, string name, string? description)
+    public async Task<IActionResult> OnPostSaveRoleAsync(Guid? id, string name, string? description, Guid? clientId, List<Guid>? permissions)
     {
         if (id.HasValue)
         {
@@ -60,21 +67,77 @@ public class IndexModel : PageModel
                 return NotFound();
 
             role.Name = name;
+            role.Description = description ?? string.Empty;
+            
+            if (clientId.HasValue)
+            {
+                role.ClientId = clientId.Value;
+            }
+            
             _roleRepository.Update(role);
             await _roleRepository.SaveChangesAsync();
+            
+            // Update permissions if provided
+            if (permissions != null && permissions.Any())
+            {
+                // Remove existing permissions
+                var existingPermissions = await _rolePermissionRepository.GetByRoleIdAsync(role.Id);
+                foreach (var rp in existingPermissions)
+                {
+                    _rolePermissionRepository.Delete(rp);
+                }
+                await _rolePermissionRepository.SaveChangesAsync();
+
+                // Add new permissions
+                foreach (var permissionId in permissions)
+                {
+                    var rolePermission = new RolePermission
+                    {
+                        Id = Guid.NewGuid(),
+                        RoleId = role.Id,
+                        PermissionId = permissionId
+                    };
+                    await _rolePermissionRepository.AddAsync(rolePermission);
+                }
+                await _rolePermissionRepository.SaveChangesAsync();
+            }
             
             TempData["SuccessMessage"] = "Rôle modifié avec succès";
         }
         else
         {
             // Create new role
+            if (!clientId.HasValue)
+            {
+                TempData["ErrorMessage"] = "Vous devez sélectionner une application pour le nouveau rôle";
+                return RedirectToPage();
+            }
+            
             var role = new Role
             {
                 Id = Guid.NewGuid(),
-                Name = name
+                Name = name,
+                Description = description ?? string.Empty,
+                ClientId = clientId.Value,
+                IsSystemRole = false
             };
 
             await _roleRepository.AddAsync(role);
+            
+            // Add permissions if provided
+            if (permissions != null && permissions.Any())
+            {
+                foreach (var permissionId in permissions)
+                {
+                    var rolePermission = new RolePermission
+                    {
+                        Id = Guid.NewGuid(),
+                        RoleId = role.Id,
+                        PermissionId = permissionId
+                    };
+                    await _rolePermissionRepository.AddAsync(rolePermission);
+                }
+            }
             
             TempData["SuccessMessage"] = "Rôle créé avec succès";
         }

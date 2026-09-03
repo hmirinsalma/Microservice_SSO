@@ -39,10 +39,6 @@
             <i class="fas fa-envelope"></i>
             Email
         </button>
-        <button class="tab-button" onclick="switchTab('advanced')">
-            <i class="fas fa-cogs"></i>
-            Avancé
-        </button>
     </div>
 
     <!-- General Settings -->
@@ -221,71 +217,6 @@
         </div>
     </div>
 
-    <!-- Advanced Settings -->
-    <div id="advanced-tab" class="tab-content">
-        <div class="settings-card">
-            <div class="settings-header">
-                <h2>Paramètres Avancés</h2>
-                <p>Configuration technique du système</p>
-            </div>
-            <form method="post" asp-page-handler="SaveAdvanced" class="settings-form">
-                <div class="form-group">
-                    <label>JWT Secret Key</label>
-                    <div class="input-group">
-                        <input type="password" name="jwtSecretKey" value="@Model.JwtSecretKey" class="form-control" id="jwtSecret" />
-                        <button type="button" class="btn-addon" onclick="togglePassword('jwtSecret')">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                    </div>
-                    <small class="form-hint text-danger">⚠️ Ne modifiez pas cette clé sans savoir ce que vous faites!</small>
-                </div>
-
-                <div class="form-group">
-                    <label>CORS Origins autorisés</label>
-                    <textarea name="corsOrigins" class="form-control" rows="4">@Model.CorsOrigins</textarea>
-                    <small class="form-hint">Une origine par ligne (ex: http://localhost:5173)</small>
-                </div>
-
-                <div class="form-group">
-                    <label class="checkbox-label">
-                        <input type="checkbox" name="enableAuditLogs" checked="@Model.EnableAuditLogs" />
-                        <span>Activer les logs d'audit détaillés</span>
-                    </label>
-                </div>
-
-                <div class="form-group">
-                    <label class="checkbox-label">
-                        <input type="checkbox" name="enableDebugMode" checked="@Model.EnableDebugMode" />
-                        <span>Mode debug (à désactiver en production)</span>
-                    </label>
-                </div>
-
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save"></i>
-                        Enregistrer
-                    </button>
-                </div>
-            </form>
-        </div>
-
-        <!-- Danger Zone -->
-        <div class="settings-card danger-zone">
-            <div class="settings-header">
-                <h2><i class="fas fa-exclamation-triangle"></i> Zone de Danger</h2>
-                <p>Actions irréversibles - utilisez avec précaution</p>
-            </div>
-            <div class="danger-actions">
-                <button type="button" class="btn btn-danger" onclick="confirmClearCache()">
-                    <i class="fas fa-trash"></i>
-                    Vider le cache
-                </button>
-                <button type="button" class="btn btn-danger" onclick="confirmResetSettings()">
-                    <i class="fas fa-undo"></i>
-                    Réinitialiser les paramètres
-                </button>
-            </div>
-        </div>
     </div>
 </div>
 

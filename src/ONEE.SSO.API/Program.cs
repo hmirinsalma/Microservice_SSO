@@ -94,6 +94,9 @@ builder.Services
 
 var app = builder.Build();
 app.UseCustomExceptionMiddleware();
+
+// TEMPORAIRE : Seed commenté pour debug
+/*
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider
@@ -126,6 +129,8 @@ using (var scope = app.Services.CreateScope())
     Console.WriteLine($"== Roles en DB : {roleCount} ==");
     Console.WriteLine($"== RolePermissions en DB : {rolePermissionCount} ==");
 }
+*/
+Console.WriteLine("== SEED SKIPPÉ TEMPORAIREMENT ==");
 
 Console.WriteLine("== App construite ==");
 
@@ -158,11 +163,15 @@ app.MapGet("/health", () =>
 });
 
 Console.WriteLine("== Avant Run ==");
-
 Console.WriteLine($"Environment : {app.Environment.EnvironmentName}");
 
-foreach (var url in app.Urls)
+try 
 {
-    Console.WriteLine($"URL : {url}");
+    Console.WriteLine("SSO démarré sur http://localhost:5205");
+    app.Run();
 }
-app.Run("http://localhost:5205");
+catch (Exception ex)
+{
+    Console.WriteLine($"ERREUR: {ex.Message}");
+    throw;
+}

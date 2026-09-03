@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ONEE.SSO.Application.Repositories;
+using ONEE.SSO.Application.Services;
 using ONEE.SSO.Infrastructure.Persistence;
 using ONEE.SSO.Infrastructure.Repositories;
 using ONEE.SSO.Application.Interfaces;
@@ -27,8 +28,10 @@ public static class InfrastructureServiceExtensions
         services.AddScoped<IPermissionRepository, PermissionRepository>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
         services.AddScoped<IUserSessionRepository, UserSessionRepository>();
+        services.AddScoped<IUserConsentRepository, UserConsentRepository>();
         services.AddScoped<IClientApplicationRepository, ClientApplicationRepository>();
         services.AddScoped<IAuditLogRepository, AuditLogRepository>();
+        services.AddScoped<INotificationRepository, NotificationRepository>();
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IRoleService, RoleService>();
         services.AddScoped<IPermissionService, PermissionService>();
@@ -36,6 +39,7 @@ public static class InfrastructureServiceExtensions
         services.AddScoped<IRefreshTokenService, RefreshTokenService>();
         services.AddScoped<IUserSessionService, UserSessionService>();
         services.AddScoped<IAuditLogService, AuditLogService>();
+        services.AddScoped<INotificationService, NotificationService>();
         services.AddScoped<IUserRoleService, UserRoleService>();
         services.AddScoped<IRolePermissionRepository, RolePermissionRepository>();
         services.AddScoped<IRolePermissionService, RolePermissionService>();

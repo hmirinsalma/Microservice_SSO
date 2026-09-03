@@ -89,6 +89,7 @@ builder.Services.AddCors(opts =>
 // Application & Infrastructure layers
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddHttpClient(); // ✅ REQUIRED: IHttpClientFactory pour les appels SSO
 
 // Static files (uploads)
 builder.Services.AddDirectoryBrowser();
@@ -124,7 +125,7 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseCors("FrontendPolicy");
 app.UseAuthentication();
-app.UseEamsContext(); // ⭐ Middleware custom EAMS pour extraire les claims
+app.UseEamsContext(); // Middleware custom EAMS pour extraire les claims
 app.UseAuthorization();
 app.MapControllers();
 

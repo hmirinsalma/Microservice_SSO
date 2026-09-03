@@ -147,7 +147,7 @@ public class MaintenanceService : IMaintenanceService
         if (!retards.Any()) return;
 
         var adminIds = await _db.Users
-            .Where(u => u.RoleMetier == UserRole.Admin_Patrimoine && u.IsActive)
+            .Where(u => u.Role == "Admin_Patrimoine" && u.IsActive)
             .Select(u => u.Id).ToListAsync();
 
         var notifs = new List<Notification>();
@@ -157,7 +157,7 @@ public class MaintenanceService : IMaintenanceService
             m.UpdatedAt = DateTime.UtcNow;
 
             var chefIds = await _db.Users
-                .Where(u => u.RoleMetier == UserRole.Chef_de_Service && u.ServiceId == m.Equipement.ServiceId && u.IsActive)
+                .Where(u => u.Role == "Chef_de_Service" && u.ServiceId == m.Equipement.ServiceId && u.IsActive)
                 .Select(u => u.Id).ToListAsync();
 
             foreach (var uid in adminIds.Concat(chefIds).Distinct())

@@ -43,7 +43,7 @@ public class User
     /// Lors de l'intégration SSO, une synchronisation de ce champ devra être
     /// implémentée (webhook ou appel à l'intégration SSO lors du login).
     /// </summary>
-    public UserRole RoleMetier { get; set; }
+    public string Role { get; set; } = "Technicien";
 
     public Guid? ServiceId { get; set; }
     public bool IsActive { get; set; } = true;

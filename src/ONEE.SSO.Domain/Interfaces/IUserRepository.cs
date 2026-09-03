@@ -15,4 +15,11 @@ public interface IUserRepository
     Task UpdateAsync(User user);
 
     Task DeleteAsync(User user);
+
+    // Gestion des rôles
+    Task<IEnumerable<UserRole>> GetUserRolesAsync(Guid userId);
+    
+    Task AddUserRoleAsync(UserRole userRole);
+    
+    void RemoveUserRole(UserRole userRole);
 }

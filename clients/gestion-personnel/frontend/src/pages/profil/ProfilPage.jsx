@@ -71,7 +71,7 @@ export default function ProfilPage() {
         <div className="px-6 pb-5">
           <div className="flex items-end gap-4 -mt-7 mb-4">
             <div className={`w-14 h-14 rounded-2xl ${colorClass} flex items-center justify-center text-white text-xl font-black border-4 border-white shadow-md`}>
-              {user?.username?.charAt(0).toUpperCase()}
+              {(user?.username || user?.email || 'U').charAt(0).toUpperCase()}
             </div>
             <div className="pb-1">
               <p className="text-base font-bold text-slate-900">{user?.username}</p>

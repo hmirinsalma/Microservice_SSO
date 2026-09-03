@@ -289,8 +289,8 @@ public class EquipementService : IEquipementService
             ? $"L'équipement '{eq.Nom}' est en panne."
             : $"L'équipement '{eq.Nom}' est remis en service.";
 
-        var admins = await _db.Users.Where(u => u.RoleMetier == UserRole.Admin_Patrimoine && u.IsActive).Select(u => u.Id).ToListAsync();
-        var chefs  = await _db.Users.Where(u => u.RoleMetier == UserRole.Chef_de_Service && u.ServiceId == eq.ServiceId && u.IsActive).Select(u => u.Id).ToListAsync();
+        var admins = await _db.Users.Where(u => u.Role == "Admin_Patrimoine" && u.IsActive).Select(u => u.Id).ToListAsync();
+        var chefs  = await _db.Users.Where(u => u.Role == "Chef_de_Service" && u.ServiceId == eq.ServiceId && u.IsActive).Select(u => u.Id).ToListAsync();
 
         foreach (var uid in admins.Concat(chefs).Distinct())
             await _notifService.CreateAsync(type, msg, eq.Id, "Equipement", uid);

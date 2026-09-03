@@ -70,7 +70,13 @@ public class RefreshTokenCommandHandler
         permissions = permissions.Distinct().ToList();
 
         // Générer le nouveau access token
-        var accessToken = _jwtService.GenerateAccessToken(user.Id, user.Email, roles, permissions);
+        var accessToken = _jwtService.GenerateAccessToken(
+            user.Id,
+            user.Email,
+            user.FirstName,
+            user.LastName,
+            roles,
+            permissions);
 
         // Log de la rotation
         await _auditLogService.LogAsync(

@@ -23,4 +23,21 @@ public class UserRepository : Repository<User>, IUserRepository
         return await _context.Users
             .AnyAsync(x => x.Email == email);
     }
+
+    public async Task<IEnumerable<UserRole>> GetUserRolesAsync(Guid userId)
+    {
+        return await _context.Set<UserRole>()
+            .Where(ur => ur.UserId == userId)
+            .ToListAsync();
+    }
+
+    public async Task AddUserRoleAsync(UserRole userRole)
+    {
+        await _context.Set<UserRole>().AddAsync(userRole);
+    }
+
+    public void RemoveUserRole(UserRole userRole)
+    {
+        _context.Set<UserRole>().Remove(userRole);
+    }
 }

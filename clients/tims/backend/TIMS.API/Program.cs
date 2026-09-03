@@ -95,6 +95,11 @@ builder.Services.AddRateLimiter(opt =>
 // ⚠️ STUB TEMPORAIRE — Remplacer par SsoAuthService lors de l'intégration SSO
 builder.Services.AddScoped<IAuthService,          StubAuthService>();
 builder.Services.AddScoped<IStubPasswordService,  StubPasswordService>();
+
+// 🎯 NOUVEAU: Service de provisioning automatique SSO
+builder.Services.AddScoped<SsoProvisioningService>();
+builder.Services.AddHttpClient(); // ✅ REQUIRED: IHttpClientFactory pour les appels SSO
+
 // SSO Migration :
 // builder.Services.AddScoped<IAuthService, SsoAuthService>();
 // Supprimer : builder.Services.AddScoped<IStubPasswordService, StubPasswordService>();
@@ -183,7 +188,7 @@ app.UseStaticFiles();
 app.UseCors("TIMSPolicy");
 app.UseRateLimiter();
 app.UseAuthentication();
-app.UseTimsContext(); // ⭐ Middleware custom TIMS pour extraire les custom claims
+app.UseTimsContext(); // Middleware custom TIMS pour extraire les custom claims
 app.UseAuthorization();
 app.MapControllers();
 app.MapHealthChecks("/health");

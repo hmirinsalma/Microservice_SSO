@@ -1,9 +1,22 @@
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using ONEE.SSO.API.Authorization;
+using ONEE.SSO.Application.Interfaces;
 
 namespace ONEE.SSO.API.Pages;
 
+[SsoAdminRequired]
 public class AuditLogsModel : PageModel
 {
+    private readonly IAuditLogService _auditLogService;
+    private readonly IUserService _userService;
+
+    public AuditLogsModel(IAuditLogService auditLogService, IUserService userService)
+    {
+        _auditLogService = auditLogService;
+        _userService = userService;
+    }
+
     public List<AuditLogDto> Logs { get; set; } = new();
     
     public string? SearchTerm { get; set; }
@@ -16,7 +29,7 @@ public class AuditLogsModel : PageModel
     public int PageSize { get; set; } = 20;
     public int TotalPages { get; set; }
 
-    public void OnGet(string? search, string? action, string? entity, string? dateFrom, string? dateTo, int page = 1)
+    public async Task OnGetAsync(string? search, string? action, string? entity, string? dateFrom, string? dateTo, int page = 1)
     {
         SearchTerm = search;
         SelectedAction = action;
@@ -29,8 +42,9 @@ public class AuditLogsModel : PageModel
         if (!string.IsNullOrEmpty(dateTo))
             DateTo = DateTime.Parse(dateTo);
 
-        // Generate mock data
-        var allLogs = GenerateMockLogs();
+        // Get real audit logs from database
+        var realLogs = await _auditLogService.GetAllAsync();
+        var allLogs = await ConvertToDisplayLogs(realLogs);
 
         // Apply filters
         var filteredLogs = allLogs.AsQueryable();
@@ -50,7 +64,7 @@ public class AuditLogsModel : PageModel
 
         if (!string.IsNullOrEmpty(SelectedEntity))
         {
-            filteredLogs = filteredLogs.Where(l => l.EntityType.ToLower() == SelectedEntity);
+            filteredLogs = filteredLogs.Where(l => l.EntityType.ToLower() == SelectedEntity.ToLower());
         }
 
         if (DateFrom.HasValue)
@@ -64,7 +78,7 @@ public class AuditLogsModel : PageModel
         }
 
         // Pagination
-        var logs = filteredLogs.ToList();
+        var logs = filteredLogs.OrderByDescending(l => l.CreatedAt).ToList();
         TotalPages = (int)Math.Ceiling(logs.Count / (double)PageSize);
         Logs = logs
             .Skip((CurrentPage - 1) * PageSize)
@@ -72,152 +86,155 @@ public class AuditLogsModel : PageModel
             .ToList();
     }
 
-    private List<AuditLogDto> GenerateMockLogs()
+    public async Task<IActionResult> OnGetExportCsvAsync(string? search, string? action, string? entity, string? dateFrom, string? dateTo)
     {
-        var now = DateTime.Now;
-        return new List<AuditLogDto>
+        // Get logs with same filters as display
+        var realLogs = await _auditLogService.GetAllAsync();
+        var allLogs = await ConvertToDisplayLogs(realLogs);
+
+        // Apply filters
+        var filteredLogs = allLogs.AsQueryable();
+
+        if (!string.IsNullOrEmpty(search))
         {
-            new()
+            filteredLogs = filteredLogs.Where(l => 
+                l.Title.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+                l.Description.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+                l.UserEmail.Contains(search, StringComparison.OrdinalIgnoreCase));
+        }
+
+        if (!string.IsNullOrEmpty(action))
+        {
+            filteredLogs = filteredLogs.Where(l => l.ActionClass == action);
+        }
+
+        if (!string.IsNullOrEmpty(entity))
+        {
+            filteredLogs = filteredLogs.Where(l => l.EntityType.ToLower() == entity.ToLower());
+        }
+
+        if (!string.IsNullOrEmpty(dateFrom))
+        {
+            var dateFromParsed = DateTime.Parse(dateFrom);
+            filteredLogs = filteredLogs.Where(l => l.CreatedAt >= dateFromParsed);
+        }
+
+        if (!string.IsNullOrEmpty(dateTo))
+        {
+            var dateToParsed = DateTime.Parse(dateTo);
+            filteredLogs = filteredLogs.Where(l => l.CreatedAt <= dateToParsed.AddDays(1));
+        }
+
+        var logs = filteredLogs.OrderByDescending(l => l.CreatedAt).ToList();
+
+        // Generate CSV
+        var csv = new System.Text.StringBuilder();
+        csv.AppendLine("Date/Heure,Utilisateur,Action,Type d'entité,Description,Adresse IP");
+
+        foreach (var log in logs)
+        {
+            csv.AppendLine($"\"{log.CreatedAt:dd/MM/yyyy HH:mm:ss}\",\"{log.UserEmail}\",\"{log.Title}\",\"{log.EntityType}\",\"{log.Description}\",\"{log.IpAddress ?? "N/A"}\"");
+        }
+
+        var fileName = $"audit_logs_{DateTime.Now:yyyyMMdd_HHmmss}.csv";
+        var bytes = System.Text.Encoding.UTF8.GetBytes(csv.ToString());
+        
+        return File(bytes, "text/csv", fileName);
+    }
+
+    private async Task<List<AuditLogDto>> ConvertToDisplayLogs(IEnumerable<Application.DTOs.AuditLogDto> realLogs)
+    {
+        var displayLogs = new List<AuditLogDto>();
+
+        foreach (var log in realLogs)
+        {
+            var userEmail = "Système";
+            if (log.UserId.HasValue && log.UserId != Guid.Empty)
             {
-                Id = Guid.NewGuid(),
-                Title = "Connexion réussie",
-                Description = "L'utilisateur s'est connecté à l'application Gestion Personnel",
-                ActionName = "Connexion",
-                ActionClass = "login",
-                ActionIcon = "fas fa-sign-in-alt",
-                EntityType = "Session",
-                UserEmail = "admin@onee.ma",
-                IpAddress = "192.168.1.10",
-                CreatedAt = now.AddMinutes(-5),
-                Details = "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\nApplication: Gestion Personnel\nSession ID: abc123"
-            },
-            new()
-            {
-                Id = Guid.NewGuid(),
-                Title = "Utilisateur créé",
-                Description = "Nouvel utilisateur 'employe.5@onee.ma' créé avec le rôle Employe",
-                ActionName = "Création",
-                ActionClass = "create",
-                ActionIcon = "fas fa-plus",
-                EntityType = "User",
-                UserEmail = "admin@onee.ma",
-                IpAddress = "192.168.1.10",
-                CreatedAt = now.AddMinutes(-15),
-                Details = "Email: employe.5@onee.ma\nNom: John Doe\nRôle: Employe\nStatut: Actif"
-            },
-            new()
-            {
-                Id = Guid.NewGuid(),
-                Title = "Rôle modifié",
-                Description = "Permissions du rôle 'Manager' mises à jour",
-                ActionName = "Modification",
-                ActionClass = "update",
-                ActionIcon = "fas fa-edit",
-                EntityType = "Role",
-                UserEmail = "admin@onee.ma",
-                IpAddress = "192.168.1.10",
-                CreatedAt = now.AddMinutes(-30),
-                Details = "Rôle: Manager\nPermissions ajoutées: users.write, roles.read\nPermissions retirées: users.delete"
-            },
-            new()
-            {
-                Id = Guid.NewGuid(),
-                Title = "Connexion réussie",
-                Description = "L'utilisateur s'est connecté à l'application TIMS",
-                ActionName = "Connexion",
-                ActionClass = "login",
-                ActionIcon = "fas fa-sign-in-alt",
-                EntityType = "Session",
-                UserEmail = "tech.1@onee.ma",
-                IpAddress = "192.168.1.42",
-                CreatedAt = now.AddHours(-1),
-                Details = "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\nApplication: TIMS\nSession ID: xyz789"
-            },
-            new()
-            {
-                Id = Guid.NewGuid(),
-                Title = "Utilisateur supprimé",
-                Description = "L'utilisateur 'test@onee.ma' a été supprimé définitivement",
-                ActionName = "Suppression",
-                ActionClass = "delete",
-                ActionIcon = "fas fa-trash",
-                EntityType = "User",
-                UserEmail = "admin@onee.ma",
-                IpAddress = "192.168.1.10",
-                CreatedAt = now.AddHours(-2),
-                Details = "Email: test@onee.ma\nRaison: Compte de test obsolète"
-            },
-            new()
-            {
-                Id = Guid.NewGuid(),
-                Title = "Déconnexion",
-                Description = "L'utilisateur s'est déconnecté de l'application Gestion Personnel",
-                ActionName = "Déconnexion",
-                ActionClass = "logout",
-                ActionIcon = "fas fa-sign-out-alt",
-                EntityType = "Session",
-                UserEmail = "chef.rh@onee.ma",
-                IpAddress = "192.168.1.25",
-                CreatedAt = now.AddHours(-3),
-                Details = "Durée de session: 2h 15min\nApplication: Gestion Personnel"
-            },
-            new()
-            {
-                Id = Guid.NewGuid(),
-                Title = "Application activée",
-                Description = "L'application 'EAMS' a été réactivée",
-                ActionName = "Modification",
-                ActionClass = "update",
-                ActionIcon = "fas fa-toggle-on",
-                EntityType = "Application",
-                UserEmail = "admin@onee.ma",
-                IpAddress = "192.168.1.10",
-                CreatedAt = now.AddHours(-4),
-                Details = "Application: EAMS\nStatut: Actif\nClient ID: eams-spa"
-            },
-            new()
-            {
-                Id = Guid.NewGuid(),
-                Title = "Permission créée",
-                Description = "Nouvelle permission 'reports.export' créée",
-                ActionName = "Création",
-                ActionClass = "create",
-                ActionIcon = "fas fa-key",
-                EntityType = "Permission",
-                UserEmail = "admin@onee.ma",
-                IpAddress = "192.168.1.10",
-                CreatedAt = now.AddHours(-5),
-                Details = "Code: reports.export\nNom: Exporter les rapports\nDescription: Permet d'exporter les rapports au format PDF/Excel"
-            },
-            new()
-            {
-                Id = Guid.NewGuid(),
-                Title = "Connexion réussie",
-                Description = "L'utilisateur s'est connecté à l'application EAMS",
-                ActionName = "Connexion",
-                ActionClass = "login",
-                ActionIcon = "fas fa-sign-in-alt",
-                EntityType = "Session",
-                UserEmail = "manager.1@onee.ma",
-                IpAddress = "192.168.1.58",
-                CreatedAt = now.AddHours(-6),
-                Details = "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X)\nApplication: EAMS\nSession ID: def456"
-            },
-            new()
-            {
-                Id = Guid.NewGuid(),
-                Title = "Rôle créé",
-                Description = "Nouveau rôle 'Superviseur' créé avec 8 permissions",
-                ActionName = "Création",
-                ActionClass = "create",
-                ActionIcon = "fas fa-user-shield",
-                EntityType = "Role",
-                UserEmail = "admin@onee.ma",
-                IpAddress = "192.168.1.10",
-                CreatedAt = now.AddDays(-1),
-                Details = "Rôle: Superviseur\nPermissions: users.read, dashboard.view, reports.read, reports.export, settings.read, sessions.view, logs.read, applications.view"
+                try
+                {
+                    var user = await _userService.GetByIdAsync(log.UserId.Value);
+                    userEmail = user?.Email ?? "Utilisateur inconnu";
+                }
+                catch
+                {
+                    userEmail = "Utilisateur inconnu";
+                }
             }
+
+            var (title, actionClass, icon) = GetActionDetails(log.Action);
+            var description = BuildDescription(log);
+
+            displayLogs.Add(new AuditLogDto
+            {
+                Id = log.Id,
+                Title = title,
+                Description = description,
+                ActionName = log.Action,
+                ActionClass = actionClass,
+                ActionIcon = icon,
+                EntityType = log.EntityName,
+                UserEmail = userEmail,
+                IpAddress = log.IpAddress,
+                CreatedAt = log.CreatedAt,
+                Details = BuildDetails(log)
+            });
+        }
+
+        return displayLogs;
+    }
+
+    private static (string Title, string ActionClass, string Icon) GetActionDetails(string action)
+    {
+        return action.ToLower() switch
+        {
+            "login" or "connexion" => ("Connexion réussie", "login", "fas fa-sign-in-alt"),
+            "logout" or "déconnexion" => ("Déconnexion", "logout", "fas fa-sign-out-alt"),
+            "create" or "création" or "créer" => ("Création", "create", "fas fa-plus"),
+            "update" or "modification" or "modifier" => ("Modification", "update", "fas fa-edit"),
+            "delete" or "suppression" or "supprimer" => ("Suppression", "delete", "fas fa-trash"),
+            "unlock" or "débloquer" => ("Déblocage de compte", "update", "fas fa-unlock"),
+            _ => (action, "other", "fas fa-info-circle")
         };
+    }
+
+    private static string BuildDescription(Application.DTOs.AuditLogDto log)
+    {
+        var entityName = log.EntityName;
+        var action = log.Action.ToLower();
+
+        return action switch
+        {
+            "login" or "connexion" => $"L'utilisateur s'est connecté au système SSO",
+            "logout" or "déconnexion" => $"L'utilisateur s'est déconnecté du système SSO",
+            "create" or "création" or "créer" => $"{entityName} créé(e) avec succès",
+            "update" or "modification" or "modifier" => $"{entityName} modifié(e) avec succès",
+            "delete" or "suppression" or "supprimer" => $"{entityName} supprimé(e)",
+            "unlock" or "débloquer" => $"Compte utilisateur débloqué",
+            _ => $"Action '{log.Action}' effectuée sur {entityName}"
+        };
+    }
+
+    private static string BuildDetails(Application.DTOs.AuditLogDto log)
+    {
+        var details = new List<string>();
+
+        if (!string.IsNullOrEmpty(log.EntityId))
+            details.Add($"ID: {log.EntityId}");
+
+        if (!string.IsNullOrEmpty(log.IpAddress))
+            details.Add($"Adresse IP: {log.IpAddress}");
+
+        if (!string.IsNullOrEmpty(log.UserAgent))
+            details.Add($"User-Agent: {log.UserAgent}");
+
+        if (!string.IsNullOrEmpty(log.OldValues))
+            details.Add($"Anciennes valeurs:\n{log.OldValues}");
+
+        if (!string.IsNullOrEmpty(log.NewValues))
+            details.Add($"Nouvelles valeurs:\n{log.NewValues}");
+
+        return details.Any() ? string.Join("\n", details) : "Aucun détail disponible";
     }
 
     public class AuditLogDto

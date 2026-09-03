@@ -1,0 +1,25 @@
+@page
+@model ONEE.SSO.API.Pages.Connect.LogoutModel
+@{
+    ViewData["Title"] = "Déconnexion en cours...";
+}
+
+<div class="onee-card">
+    <div class="onee-card-header">
+        <div class="onee-logo">
+            <i class="fas fa-spinner fa-spin"></i>
+        </div>
+        <h1 class="onee-title">Déconnexion en cours...</h1>
+        <p class="onee-subtitle">Veuillez patienter</p>
+    </div>
+</div>
+
+<script>
+    // Cette page ne devrait normalement pas s'afficher car on redirige immédiatement
+    // Si elle s'affiche, c'est qu'il y a un problème
+    setTimeout(() => {
+        if (window.location.pathname.includes('/connect/logout')) {
+            window.location.href = '/Login';
+        }
+    }, 2000);
+</script>

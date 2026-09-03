@@ -18,47 +18,49 @@ public class ResetPasswordModel : PageModel
     }
 
     [BindProperty(SupportsGet = true)]
-    public string? Token { get; set; }
+    public string Token { get; set; } = string.Empty;
 
     [BindProperty(SupportsGet = true)]
-    public string? Email { get; set; }
+    public string Email { get; set; } = string.Empty;
 
     [BindProperty]
-    [Required(ErrorMessage = "Le nouveau mot de passe est obligatoire")]
-    [StringLength(100, MinimumLength = 8, ErrorMessage = "Le mot de passe doit contenir au moins 8 caractères")]
-    [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$",
-        ErrorMessage = "Le mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule, un chiffre et un caractère spécial")]
+    [Required(ErrorMessage = "Le mot de passe est obligatoire")]
+    [MinLength(8, ErrorMessage = "Le mot de passe doit contenir au moins 8 caractères")]
+    [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$", 
+        ErrorMessage = "Le mot de passe doit contenir au moins une majuscule, une minuscule, un chiffre et un caractère spécial")]
     public string NewPassword { get; set; } = string.Empty;
 
     [BindProperty]
-    [Required(ErrorMessage = "La confirmation est obligatoire")]
-    [Compare("NewPassword", ErrorMessage = "Les mots de passe ne correspondent pas")]
+    [Required(ErrorMessage = "La confirmation du mot de passe est obligatoire")]
+    [Compare(nameof(NewPassword), ErrorMessage = "Les mots de passe ne correspondent pas")]
     public string ConfirmPassword { get; set; } = string.Empty;
 
     public string? ErrorMessage { get; set; }
     public string? SuccessMessage { get; set; }
-    public bool IsTokenInvalid { get; set; }
+    public bool ShowSuccessMessage { get; set; }
 
-    public void OnGet()
+    public void OnGet(string token, string email)
     {
+        Token = token;
+        Email = email;
+
         if (string.IsNullOrEmpty(Token) || string.IsNullOrEmpty(Email))
         {
-            IsTokenInvalid = true;
             ErrorMessage = "Le lien de réinitialisation est invalide ou a expiré.";
         }
     }
 
     public async Task<IActionResult> OnPostAsync()
     {
-        if (string.IsNullOrEmpty(Token) || string.IsNullOrEmpty(Email))
+        if (!ModelState.IsValid)
         {
-            IsTokenInvalid = true;
-            ErrorMessage = "Le lien de réinitialisation est invalide ou a expiré.";
+            ErrorMessage = "Veuillez remplir tous les champs correctement.";
             return Page();
         }
 
-        if (!ModelState.IsValid)
+        if (string.IsNullOrEmpty(Token) || string.IsNullOrEmpty(Email))
         {
+            ErrorMessage = "Le lien de réinitialisation est invalide ou a expiré.";
             return Page();
         }
 
@@ -66,7 +68,7 @@ public class ResetPasswordModel : PageModel
         {
             var client = _httpClientFactory.CreateClient();
             var baseUrl = _configuration["BaseUrl"] ?? "http://localhost:5205";
-
+            
             var request = new
             {
                 email = Email,
@@ -81,34 +83,34 @@ public class ResetPasswordModel : PageModel
 
             if (response.IsSuccessStatusCode)
             {
-                SuccessMessage = "Votre mot de passe a été réinitialisé avec succès. Vous pouvez maintenant vous connecter.";
-                // Vider les champs
-                NewPassword = string.Empty;
-                ConfirmPassword = string.Empty;
+                ShowSuccessMessage = true;
+                SuccessMessage = "Votre mot de passe a été réinitialisé avec succès. Vous pouvez maintenant vous connecter avec votre nouveau mot de passe.";
             }
-            else
+            else if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
             {
                 var errorContent = await response.Content.ReadAsStringAsync();
                 
-                if (errorContent.Contains("expiré") || errorContent.Contains("expired"))
+                if (errorContent.Contains("expired") || errorContent.Contains("expiré"))
                 {
                     ErrorMessage = "Le lien de réinitialisation a expiré. Veuillez faire une nouvelle demande.";
-                    IsTokenInvalid = true;
                 }
-                else if (errorContent.Contains("invalide") || errorContent.Contains("invalid"))
+                else if (errorContent.Contains("invalid") || errorContent.Contains("invalide"))
                 {
                     ErrorMessage = "Le lien de réinitialisation est invalide.";
-                    IsTokenInvalid = true;
                 }
                 else
                 {
-                    ErrorMessage = "Une erreur s'est produite lors de la réinitialisation. Veuillez réessayer.";
+                    ErrorMessage = "Une erreur s'est produite. Veuillez réessayer.";
                 }
+            }
+            else
+            {
+                ErrorMessage = "Une erreur s'est produite. Veuillez réessayer plus tard.";
             }
         }
         catch (Exception ex)
         {
-            ErrorMessage = $"Erreur lors de la réinitialisation : {ex.Message}";
+            ErrorMessage = $"Erreur de connexion au serveur : {ex.Message}";
         }
 
         return Page();

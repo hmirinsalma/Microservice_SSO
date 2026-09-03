@@ -33,6 +33,13 @@ builder.Services.AddScoped<IUserManagementRepository, UserManagementRepository>(
 // SSO-READY : Changer uniquement cette ligne lors de l'intégration SSO :
 //   builder.Services.AddScoped<IAuthService, SsoAuthService>();
 builder.Services.AddScoped<IAuthService, StubAuthService>();
+
+// 🎯 NOUVEAU: Service de provisioning automatique SSO
+builder.Services.AddScoped<SsoProvisioningService>();
+
+// 🔧 HttpClient pour appeler le SSO depuis AuthController
+builder.Services.AddHttpClient();
+
 // TEMPORAIRE — Supprimé lors de l'intégration SSO :
 builder.Services.AddScoped<IStubCredentialService, StubCredentialService>();
 builder.Services.AddScoped<IDirectionService, DirectionService>();
@@ -97,7 +104,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowFrontend", policy =>
     {
         policy.WithOrigins(
-            builder.Configuration["Cors:AllowedOrigins"]?.Split(',') ?? ["http://localhost:5173"]
+            builder.Configuration["Cors:AllowedOrigins"]?.Split(',') ?? ["http://localhost:5174"]
         )
         .AllowAnyHeader()
         .AllowAnyMethod()
@@ -147,8 +154,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Gestion Personnel v1"));
 }
 
-app.UseHttpsRedirection();
 app.UseCors("AllowFrontend");
+app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

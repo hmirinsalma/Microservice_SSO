@@ -26,10 +26,40 @@ public static class ClaimsHelper
     /// <summary>
     /// Retourne le rôle depuis le claim JWT (ClaimTypes.Role).
     /// Ce claim est fourni par le stub ou par le SSO — transparent pour les Controllers.
+    /// ✅ Mappe les rôles SSO vers les rôles RH locaux.
+    /// ✅ Gère les rôles qualifiés SSO (format: RoleName@gestion-personnel).
     /// </summary>
     public static string GetRole(ClaimsPrincipal principal)
-        => principal.FindFirstValue(ClaimTypes.Role)
-           ?? throw new UnauthorizedAccessException("Claim de rôle manquant dans le token JWT.");
+    {
+        // ✅ Récupérer TOUS les rôles (le JWT SSO peut contenir plusieurs rôles qualifiés)
+        var roles = principal.FindAll(ClaimTypes.Role).Select(c => c.Value).ToArray();
+        
+        if (roles.Length == 0)
+            throw new UnauthorizedAccessException("Claim de rôle manquant dans le token JWT.");
+        
+        // ✅ Chercher spécifiquement le rôle RH (avec @gestion-personnel-spa ou @gestion-personnel)
+        var roleValue = roles.FirstOrDefault(r => r.Contains("@gestion-personnel")) ?? roles[0];
+        
+        Console.WriteLine($"[DEBUG] GetRole: Tous les rôles = [{string.Join(", ", roles)}], Rôle RH sélectionné = '{roleValue}'");
+        
+        // ✅ IMPORTANT: Extraire le rôle des rôles qualifiés SSO (format: Role@gestion-personnel)
+        // Si le rôle contient '@', prendre uniquement la partie avant
+        var roleName = roleValue.Contains('@') 
+            ? roleValue.Split('@')[0] 
+            : roleValue;
+        
+        // ✅ Mapping des rôles SSO vers rôles RH (insensible à la casse)
+        return roleName.ToLowerInvariant() switch
+        {
+            "chefservice" => "ChefDeService",
+            "chef_de_service" => "ChefDeService",
+            "directeurressources" => "Directeur",
+            "directeur" => "Directeur",
+            "administrateurrh" => "AdministrateurRH",
+            "employe" => "Employe",
+            _ => roleName // Si déjà au bon format ou rôle inconnu, on garde tel quel
+        };
+    }
 
     /// <summary>
     /// Retourne la valeur brute du claim 'sub' (SsoId côté SSO, UserId local côté stub).
@@ -55,12 +85,17 @@ public static class ClaimsHelper
         CancellationToken ct = default)
     {
         var sub = GetSubClaim(principal);
+        
+        // 🔍 DEBUG: Log du claim sub
+        Console.WriteLine($"[DEBUG] ClaimsHelper.ResolveLocalUserIdAsync: sub = '{sub}'");
 
         // Étape 1 : chercher par SsoId (mode SSO natif)
         var userBySso = await db.Users
             .Where(u => u.SsoId == sub && u.IsActive)
             .Select(u => (int?)u.Id)
             .FirstOrDefaultAsync(ct);
+        
+        Console.WriteLine($"[DEBUG] userBySso = {userBySso}");
 
         if (userBySso.HasValue)
             return userBySso.Value;
@@ -69,10 +104,13 @@ public static class ClaimsHelper
         // STUB TEMPORAIRE — Supprimé lors de l'intégration SSO
         if (int.TryParse(sub, out var localId))
         {
+            Console.WriteLine($"[DEBUG] Fallback: trying localId = {localId}");
             var userById = await db.Users
                 .Where(u => u.Id == localId && u.IsActive)
                 .Select(u => (int?)u.Id)
                 .FirstOrDefaultAsync(ct);
+            
+            Console.WriteLine($"[DEBUG] userById = {userById}");
 
             if (userById.HasValue)
                 return userById.Value;

@@ -38,28 +38,49 @@ public class DashboardController : ControllerBase
 
     private async Task<IActionResult> GetDirecteurDashboard()
     {
-        var userId  = await ClaimsHelper.ResolveLocalUserIdAsync(User, _db);
-        var employe = await _db.Employes.FirstOrDefaultAsync(e => e.UserId == userId);
-        if (employe == null)
-            return Ok(new { message = "Aucune fiche employé liée à ce compte." });
-        return Ok(await _service.GetDirecteurDashboardAsync(employe.DirectionId));
+        try
+        {
+            var userId  = await ClaimsHelper.ResolveLocalUserIdAsync(User, _db);
+            var employe = await _db.Employes.FirstOrDefaultAsync(e => e.UserId == userId);
+            if (employe == null)
+                return Ok(new { message = "Aucune fiche employé liée à ce compte." });
+            return Ok(await _service.GetDirecteurDashboardAsync(employe.DirectionId));
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Ok(new { message = $"Erreur d'accès: {ex.Message}. Vérifiez que votre fiche employé est liée à votre compte SSO." });
+        }
     }
 
     private async Task<IActionResult> GetChefDashboard()
     {
-        var userId  = await ClaimsHelper.ResolveLocalUserIdAsync(User, _db);
-        var employe = await _db.Employes.FirstOrDefaultAsync(e => e.UserId == userId);
-        if (employe == null)
-            return Ok(new { message = "Aucune fiche employé liée à ce compte." });
-        return Ok(await _service.GetChefServiceDashboardAsync(employe.ServiceId));
+        try
+        {
+            var userId  = await ClaimsHelper.ResolveLocalUserIdAsync(User, _db);
+            var employe = await _db.Employes.FirstOrDefaultAsync(e => e.UserId == userId);
+            if (employe == null)
+                return Ok(new { message = "Aucune fiche employé liée à ce compte." });
+            return Ok(await _service.GetChefServiceDashboardAsync(employe.ServiceId));
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Ok(new { message = $"Erreur d'accès: {ex.Message}. Vérifiez que votre fiche employé est liée à votre compte SSO." });
+        }
     }
 
     private async Task<IActionResult> GetEmployeDashboard()
     {
-        var userId  = await ClaimsHelper.ResolveLocalUserIdAsync(User, _db);
-        var employe = await _db.Employes.FirstOrDefaultAsync(e => e.UserId == userId);
-        if (employe == null)
-            return Ok(new { message = "Aucune fiche employé liée à ce compte." });
-        return Ok(await _service.GetEmployeDashboardAsync(employe.Id));
+        try
+        {
+            var userId  = await ClaimsHelper.ResolveLocalUserIdAsync(User, _db);
+            var employe = await _db.Employes.FirstOrDefaultAsync(e => e.UserId == userId);
+            if (employe == null)
+                return Ok(new { message = "Aucune fiche employé liée à ce compte." });
+            return Ok(await _service.GetEmployeDashboardAsync(employe.Id));
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Ok(new { message = $"Erreur d'accès: {ex.Message}. Vérifiez que votre fiche employé est liée à votre compte SSO." });
+        }
     }
 }

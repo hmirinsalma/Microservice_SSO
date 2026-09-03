@@ -19,6 +19,8 @@ public class JwtService : IJwtService
     public string GenerateAccessToken(
         Guid userId,
         string email,
+        string? firstName,
+        string? lastName,
         IEnumerable<string> roles,
         IEnumerable<string> permissions)
     {
@@ -58,9 +60,31 @@ public class JwtService : IJwtService
             new(ClaimTypes.Email, email)
         };
 
+        // ✅ Ajouter given_name et family_name pour TIMS
+        if (!string.IsNullOrEmpty(firstName))
+        {
+            claims.Add(new Claim(JwtRegisteredClaimNames.GivenName, firstName));
+            claims.Add(new Claim("given_name", firstName)); // Doublon pour compatibilité
+        }
+
+        if (!string.IsNullOrEmpty(lastName))
+        {
+            claims.Add(new Claim(JwtRegisteredClaimNames.FamilyName, lastName));
+            claims.Add(new Claim("family_name", lastName)); // Doublon pour compatibilité
+        }
+
+        // Ajouter le nom complet si disponible
+        if (!string.IsNullOrEmpty(firstName) || !string.IsNullOrEmpty(lastName))
+        {
+            var fullName = $"{firstName} {lastName}".Trim();
+            claims.Add(new Claim(JwtRegisteredClaimNames.Name, fullName));
+            claims.Add(new Claim("name", fullName)); // Doublon pour compatibilité
+        }
+
         foreach (var role in roles.Distinct())
         {
             claims.Add(new Claim(ClaimTypes.Role, role));
+            claims.Add(new Claim("role", role)); // Ajouter aussi en lowercase pour OIDC
         }
 
         foreach (var permission in permissions.Distinct())
@@ -130,8 +154,11 @@ public class JwtService : IJwtService
     public string GenerateIdToken(
         Guid userId,
         string email,
-        string? fullName,
-        string clientId)
+        string? firstName,
+        string? lastName,
+        string clientId,
+        IEnumerable<string>? roles = null,
+        IEnumerable<string>? permissions = null)
     {
         var jwtSection = _configuration.GetSection("Jwt");
 
@@ -168,10 +195,43 @@ public class JwtService : IJwtService
             new("email_verified", "true")
         };
 
-        // Ajouter le nom si disponible
-        if (!string.IsNullOrEmpty(fullName))
+        // Ajouter given_name et family_name si disponibles
+        if (!string.IsNullOrEmpty(firstName))
         {
+            claims.Add(new Claim(JwtRegisteredClaimNames.GivenName, firstName));
+            claims.Add(new Claim("given_name", firstName)); // Doublon pour compatibilité
+        }
+
+        if (!string.IsNullOrEmpty(lastName))
+        {
+            claims.Add(new Claim(JwtRegisteredClaimNames.FamilyName, lastName));
+            claims.Add(new Claim("family_name", lastName)); // Doublon pour compatibilité
+        }
+
+        // Ajouter le nom complet si disponible
+        if (!string.IsNullOrEmpty(firstName) || !string.IsNullOrEmpty(lastName))
+        {
+            var fullName = $"{firstName} {lastName}".Trim();
             claims.Add(new Claim(JwtRegisteredClaimNames.Name, fullName));
+            claims.Add(new Claim("name", fullName)); // Doublon pour compatibilité
+        }
+
+        // ✅ FIX DASHBOARD 403: Ajouter les rôles et permissions dans l'id_token
+        // Cela permet à oidc-client-ts de les lire automatiquement dans user.profile
+        if (roles != null)
+        {
+            foreach (var role in roles.Distinct())
+            {
+                claims.Add(new Claim("role", role)); // Standard OIDC claim name (lowercase)
+            }
+        }
+
+        if (permissions != null)
+        {
+            foreach (var permission in permissions.Distinct())
+            {
+                claims.Add(new Claim("permission", permission));
+            }
         }
 
         // Créer le header avec kid (Key ID) pour la validation JWT

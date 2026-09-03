@@ -2,10 +2,10 @@ import { UserManager, WebStorageStateStore, UserManagerSettings } from 'oidc-cli
 
 const AUTHORITY = 'http://localhost:5205';
 const CLIENT_ID = 'eams-spa';
-const CLIENT_SECRET = 'secret-eams-2024';
-const REDIRECT_URI = 'http://localhost:5174/callback';
-const POST_LOGOUT_REDIRECT_URI = 'http://localhost:5174';
-const SILENT_REDIRECT_URI = 'http://localhost:5174/silent-renew.html';
+const CLIENT_SECRET = 'secret_eams_spa_2024';
+const REDIRECT_URI = 'http://localhost:5173/connect/callback';
+const POST_LOGOUT_REDIRECT_URI = 'http://localhost:5173';
+const SILENT_REDIRECT_URI = 'http://localhost:5173/silent-renew.html';
 
 export const oidcConfig: UserManagerSettings = {
   authority: AUTHORITY,

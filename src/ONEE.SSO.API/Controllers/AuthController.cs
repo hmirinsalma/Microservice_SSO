@@ -22,6 +22,7 @@ public class AuthController : ControllerBase
     private readonly IUserRepository _userRepository;
     private readonly IUserRoleRepository _userRoleRepository;
     private readonly IRolePermissionRepository _rolePermissionRepository;
+    private readonly ONEE.SSO.Application.Services.INotificationService _notificationService;
 
     public AuthController(
         LoginCommandHandler loginCommandHandler, 
@@ -33,7 +34,8 @@ public class AuthController : ControllerBase
         ChangePasswordCommandHandler changePasswordCommandHandler,
         IUserRepository userRepository,
         IUserRoleRepository userRoleRepository,
-        IRolePermissionRepository rolePermissionRepository)
+        IRolePermissionRepository rolePermissionRepository,
+        ONEE.SSO.Application.Services.INotificationService notificationService)
     {
         _loginCommandHandler = loginCommandHandler;
         _logoutCommandHandler = logoutCommandHandler;
@@ -45,6 +47,7 @@ public class AuthController : ControllerBase
         _userRepository = userRepository;
         _userRoleRepository = userRoleRepository;
         _rolePermissionRepository = rolePermissionRepository;
+        _notificationService = notificationService;
     }
 
     /// <summary>
@@ -55,6 +58,27 @@ public class AuthController : ControllerBase
     {
         var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
         var userAgent = HttpContext.Request.Headers.UserAgent.ToString();
+
+        // Vérifier d'abord si l'utilisateur existe et est bloqué
+        var user = await _userRepository.GetByEmailAsync(request.Email);
+        
+        if (user != null && user.IsLocked)
+        {
+            return Unauthorized(new
+            {
+                message = "Votre compte a été verrouillé suite à plusieurs tentatives de connexion échouées. Veuillez contacter un administrateur.",
+                isLocked = true
+            });
+        }
+
+        if (user != null && !user.IsActive)
+        {
+            return Unauthorized(new
+            {
+                message = "Votre compte a été désactivé. Veuillez contacter un administrateur.",
+                isInactive = true
+            });
+        }
 
         var command = new LoginCommand
         {
@@ -72,6 +96,21 @@ public class AuthController : ControllerBase
             {
                 message = "Email ou mot de passe incorrect."
             });
+        }
+
+        // ✅ Créer une notification pour connexion réussie
+        if (user != null)
+        {
+            var clientApp = Request.Headers["X-Client-Application"].ToString();
+            await _notificationService.CreateNotificationAsync(
+                user.Id,
+                "Connexion réussie",
+                $"Vous vous êtes connecté avec succès{(string.IsNullOrEmpty(clientApp) ? "" : $" à {clientApp}")}.",
+                "success",
+                clientApp,
+                ipAddress,
+                userAgent
+            );
         }
 
         return Ok(result);

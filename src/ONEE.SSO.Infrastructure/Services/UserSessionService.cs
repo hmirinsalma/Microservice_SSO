@@ -9,11 +9,16 @@ public class UserSessionService : IUserSessionService
 {
     private readonly IUserSessionRepository _repository;
     private readonly IRefreshTokenRepository _refreshTokenRepository;
+    private readonly IUserRepository _userRepository;
 
-    public UserSessionService(IUserSessionRepository repository, IRefreshTokenRepository refreshTokenRepository)
+    public UserSessionService(
+        IUserSessionRepository repository, 
+        IRefreshTokenRepository refreshTokenRepository,
+        IUserRepository userRepository)
     {
         _repository = repository;
         _refreshTokenRepository = refreshTokenRepository;
+        _userRepository = userRepository;
     }
 
     private static UserSessionDto MapToDto(Domain.Entities.UserSession session)
@@ -134,5 +139,20 @@ public class UserSessionService : IUserSessionService
             _repository.Update(activeSession);
             await _repository.SaveChangesAsync();
         }
+    }
+
+    public async Task<bool> HasActiveSessionAsync(string email)
+    {
+        // Récupérer l'utilisateur par email
+        var user = await _userRepository.GetByEmailAsync(email);
+        
+        if (user == null)
+            return false;
+
+        // Vérifier s'il a une session active
+        var sessions = await _repository.GetAllAsync();
+        var hasActiveSession = sessions.Any(s => s.UserId == user.Id && s.IsActive);
+
+        return hasActiveSession;
     }
 }

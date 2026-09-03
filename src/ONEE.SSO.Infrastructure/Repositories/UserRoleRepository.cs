@@ -25,6 +25,7 @@ public class UserRoleRepository : Repository<UserRole>, IUserRoleRepository
         return await _context.UserRoles
             .Where(ur => ur.UserId == userId)
             .Include(ur => ur.Role)
+                .ThenInclude(r => r.Client)
             .ToListAsync();
     }
 

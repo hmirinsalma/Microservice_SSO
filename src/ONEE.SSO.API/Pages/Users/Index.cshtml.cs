@@ -2,9 +2,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using ONEE.SSO.Application.Repositories;
 using ONEE.SSO.Domain.Entities;
+using ONEE.SSO.API.Authorization;
 
 namespace ONEE.SSO.API.Pages.Users;
 
+[SsoAdminRequired]
 public class IndexModel : PageModel
 {
     private readonly IUserRepository _userRepository;

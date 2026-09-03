@@ -16,6 +16,10 @@
             <p class="page-subtitle">Gérer les sessions utilisateurs en temps réel</p>
         </div>
         <div class="page-actions">
+            <button class="btn btn-secondary" onclick="exportSessions()">
+                <i class="fas fa-download"></i>
+                Exporter (CSV)
+            </button>
             <button class="btn btn-danger" onclick="confirmRevokeAll()">
                 <i class="fas fa-ban"></i>
                 Révoquer toutes les sessions
@@ -58,7 +62,7 @@
 
     <!-- Filters -->
     <div class="filters-section">
-        <form method="get" class="filters-form">
+        <form method="get" class="filters-form" id="filtersForm">
             <div class="filter-group">
                 <input type="text" name="search" value="@Model.SearchTerm" placeholder="Rechercher par email..." class="filter-input" />
             </div>
@@ -525,6 +529,18 @@
 
         function closeRevokeAllModal() {
             document.getElementById('revokeAllModal').classList.remove('show');
+        }
+
+        function exportSessions() {
+            // Get current filter values
+            const form = document.getElementById('filtersForm');
+            if (form) {
+                const formData = new FormData(form);
+                const params = new URLSearchParams(formData);
+                window.location.href = '/Sessions?handler=ExportCsv&' + params.toString();
+            } else {
+                window.location.href = '/Sessions?handler=ExportCsv';
+            }
         }
     </script>
 }

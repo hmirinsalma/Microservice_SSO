@@ -39,9 +39,20 @@ public static class ClaimsHelper
         ?? user.FindFirstValue(ClaimTypes.NameIdentifier)
         ?? throw new UnauthorizedAccessException("Claim sub introuvable dans le JWT.");
 
-    /// <summary>Retourne le premier rôle de l'utilisateur depuis le JWT.</summary>
+    /// <summary>
+    /// Retourne le premier rôle de l'utilisateur depuis le JWT.
+    /// ✅ Gère les rôles qualifiés SSO (format: RoleName@tims-app).
+    /// </summary>
     public static string GetRole(ClaimsPrincipal user)
-        => user.FindFirstValue(ClaimTypes.Role) ?? string.Empty;
+    {
+        var roleValue = user.FindFirstValue(ClaimTypes.Role) ?? string.Empty;
+        
+        // ✅ IMPORTANT: Extraire le rôle des rôles qualifiés SSO (format: Role@tims-app)
+        // Si le rôle contient '@', prendre uniquement la partie avant
+        return roleValue.Contains('@') 
+            ? roleValue.Split('@')[0] 
+            : roleValue;
+    }
 
     /// <summary>Retourne tous les rôles de l'utilisateur depuis le JWT.</summary>
     public static List<string> GetRoles(ClaimsPrincipal user)

@@ -172,9 +172,19 @@ public class ConnectController : ControllerBase
         var userRoleRepository = HttpContext.RequestServices.GetRequiredService<ONEE.SSO.Application.Repositories.IUserRoleRepository>();
         var rolePermissionRepository = HttpContext.RequestServices.GetRequiredService<ONEE.SSO.Application.Repositories.IRolePermissionRepository>();
         
-        // Récupérer les rôles de l'utilisateur
+        // Récupérer les rôles de l'utilisateur AVEC leur ClientId
         var userRoles = await userRoleRepository.GetByUserIdAsync(user.Id);
-        var roles = userRoles.Select(ur => ur.Role.Name).Distinct().ToList();
+        
+        // ✅ FIX CRITIQUE: Qualifier les rôles avec leur application (format: "RoleName@ClientId")
+        // Cela empêche les collisions de noms de rôles entre applications
+        var qualifiedRoles = userRoles
+            .Select(ur => $"{ur.Role.Name}@{ur.Role.Client.ClientId}")
+            .Distinct()
+            .ToList();
+
+        _logger.LogInformation("🔐 Roles qualifiés générés pour {Email}: {Roles}", 
+            user.Email, 
+            string.Join(", ", qualifiedRoles));
 
         // Récupérer les permissions
         var permissions = new List<string>();
@@ -185,12 +195,24 @@ public class ConnectController : ControllerBase
         }
         permissions = permissions.Distinct().ToList();
         
-        // Générer le nouveau access_token avec rôles et permissions
-        var newAccessToken = jwtService.GenerateAccessToken(user.Id, user.Email, roles, permissions);
+        // Générer le nouveau access_token avec rôles qualifiés et permissions
+        var newAccessToken = jwtService.GenerateAccessToken(
+            user.Id,
+            user.Email,
+            user.FirstName,
+            user.LastName,
+            qualifiedRoles,
+            permissions);
         
-        // Générer l'id_token OIDC (contient les infos d'identité de l'utilisateur)
-        var fullName = $"{user.FirstName} {user.LastName}".Trim();
-        var idToken = jwtService.GenerateIdToken(user.Id, user.Email, fullName, request.client_id!);
+        // Générer l'id_token OIDC (contient les infos d'identité de l'utilisateur + rôles qualifiés + permissions)
+        var idToken = jwtService.GenerateIdToken(
+            user.Id, 
+            user.Email, 
+            user.FirstName, 
+            user.LastName, 
+            request.client_id!, 
+            qualifiedRoles, 
+            permissions);
 
         _logger.LogInformation("✅ Generated access_token and id_token for user: {Email}, client: {ClientId}", user.Email, request.client_id);
 

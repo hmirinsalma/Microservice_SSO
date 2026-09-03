@@ -86,10 +86,10 @@ function SidebarContent({ onClose }) {
             isActive ? 'bg-slate-700' : 'hover:bg-slate-800'
           )}>
           <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-sm shrink-0">
-            {user?.username?.charAt(0).toUpperCase()}
+            {(user?.username || user?.email || 'U').charAt(0).toUpperCase()}
           </div>
           <div className="flex-1 min-w-0 text-left">
-            <p className="text-sm font-semibold text-white truncate leading-tight">{user?.username}</p>
+            <p className="text-sm font-semibold text-white truncate leading-tight">{user?.username || user?.email || 'Utilisateur'}</p>
             <p className="text-xs text-slate-400 truncate leading-tight">
               {ROLE_LABELS[user?.role] || user?.role}
             </p>

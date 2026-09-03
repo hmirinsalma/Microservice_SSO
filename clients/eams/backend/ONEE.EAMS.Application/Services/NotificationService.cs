@@ -82,7 +82,7 @@ public class NotificationService : INotificationService
         if (!equipements.Any()) return;
 
         var adminIds = await _db.Users
-            .Where(u => u.RoleMetier == UserRole.Admin_Patrimoine && u.IsActive)
+            .Where(u => u.Role == "Admin_Patrimoine" && u.IsActive)
             .Select(u => u.Id)
             .ToListAsync();
 

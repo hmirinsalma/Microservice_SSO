@@ -32,7 +32,9 @@ export default function Navbar() {
   }, []);
 
   const handleLogout = async () => { await logout(); navigate('/login'); };
-  const initials = user ? `${user.prenom[0]}${user.nom[0]}`.toUpperCase() : 'U';
+  const initials = user && user.prenom && user.nom 
+    ? `${user.prenom[0]}${user.nom[0]}`.toUpperCase() 
+    : 'U';
 
   return (
     <Box sx={{

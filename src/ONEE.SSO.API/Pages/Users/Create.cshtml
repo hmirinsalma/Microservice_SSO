@@ -1,0 +1,410 @@
+@page
+@model ONEE.SSO.API.Pages.Users.CreateModel
+@{
+    ViewData["Title"] = "Créer un Utilisateur";
+    Layout = "_AdminLayout";
+}
+
+<style>
+    .create-user-container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+
+    .create-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+    }
+
+    .create-header {
+        background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+        color: white;
+        padding: 2rem;
+        text-align: center;
+    }
+
+    .create-header h2 {
+        margin: 0;
+        font-size: 1.75rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+    }
+
+    .create-header p {
+        margin: 0.5rem 0 0 0;
+        opacity: 0.9;
+        font-size: 0.95rem;
+    }
+
+    .create-body {
+        padding: 2.5rem;
+    }
+
+    .form-section {
+        margin-bottom: 2rem;
+    }
+
+    .form-section-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #1e293b;
+        margin-bottom: 1.25rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid #e2e8f0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: #334155;
+        margin-bottom: 0.5rem;
+        font-size: 0.95rem;
+    }
+
+    .required-star {
+        color: #dc2626;
+        margin-left: 0.25rem;
+    }
+
+    .form-control {
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
+        transition: all 0.2s;
+    }
+
+    .form-control:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        outline: none;
+    }
+
+    .form-text {
+        color: #64748b;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+
+    .text-danger {
+        color: #dc2626 !important;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+        display: block;
+    }
+
+    .roles-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 1rem;
+        padding: 1.5rem;
+        background: #f8fafc;
+        border-radius: 12px;
+        border: 2px solid #e2e8f0;
+    }
+
+    .role-card {
+        background: white;
+        border: 2px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 1rem;
+        transition: all 0.2s;
+        cursor: pointer;
+    }
+
+    .role-card:hover {
+        border-color: #3b82f6;
+        box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15);
+        transform: translateY(-2px);
+    }
+
+    .role-card.selected {
+        border-color: #3b82f6;
+        background: #eff6ff;
+    }
+
+    .role-checkbox {
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+        margin-right: 0.75rem;
+    }
+
+    .role-info {
+        flex: 1;
+    }
+
+    .role-name {
+        font-weight: 600;
+        color: #1e293b;
+        font-size: 1rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .role-description {
+        color: #64748b;
+        font-size: 0.875rem;
+        line-height: 1.4;
+    }
+
+    .role-label {
+        display: flex;
+        align-items: flex-start;
+        cursor: pointer;
+    }
+
+    .status-toggle {
+        background: #f8fafc;
+        padding: 1.25rem;
+        border-radius: 10px;
+        border: 2px solid #e2e8f0;
+    }
+
+    .form-check-input {
+        width: 48px;
+        height: 24px;
+        cursor: pointer;
+    }
+
+    .form-check-input:checked {
+        background-color: #10b981;
+        border-color: #10b981;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: space-between;
+        padding-top: 2rem;
+        border-top: 2px solid #e2e8f0;
+        margin-top: 2rem;
+    }
+
+    .btn {
+        padding: 0.875rem 2rem;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 1rem;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+        color: white;
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+    }
+
+    .btn-secondary {
+        background: #e2e8f0;
+        color: #475569;
+    }
+
+    .btn-secondary:hover {
+        background: #cbd5e1;
+    }
+
+    .alert-danger {
+        background: #fef2f2;
+        border: 2px solid #fecaca;
+        border-radius: 10px;
+        padding: 1rem;
+        color: #991b1b;
+        margin-bottom: 1.5rem;
+    }
+</style>
+
+<div class="create-user-container">
+    <div class="create-card">
+        <div class="create-header">
+            <h2>
+                <i class="fas fa-user-plus"></i>
+                Créer un Nouvel Utilisateur
+            </h2>
+            <p>Remplissez les informations ci-dessous pour créer un compte utilisateur SSO</p>
+        </div>
+        <div class="create-body">
+            <form method="post">
+                <div asp-validation-summary="ModelOnly" class="alert-danger"></div>
+
+                <!-- Section Informations Personnelles -->
+                <div class="form-section">
+                    <h3 class="form-section-title">
+                        <i class="fas fa-user"></i>
+                        Informations Personnelles
+                    </h3>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Input.FirstName" class="form-label">
+                                Prénom <span class="required-star">*</span>
+                            </label>
+                            <input asp-for="Input.FirstName" class="form-control" placeholder="Ex: Mohamed" />
+                            <span asp-validation-for="Input.FirstName" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Input.LastName" class="form-label">
+                                Nom <span class="required-star">*</span>
+                            </label>
+                            <input asp-for="Input.LastName" class="form-control" placeholder="Ex: Hassan" />
+                            <span asp-validation-for="Input.LastName" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Input.Email" class="form-label">
+                            Adresse Email <span class="required-star">*</span>
+                        </label>
+                        <input asp-for="Input.Email" type="email" class="form-control"
+                               placeholder="mohamed.hassan@onee.ma" />
+                        <span asp-validation-for="Input.Email" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <!-- Section Sécurité -->
+                <div class="form-section">
+                    <h3 class="form-section-title">
+                        <i class="fas fa-lock"></i>
+                        Sécurité
+                    </h3>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Input.Password" class="form-label">
+                                Mot de Passe <span class="required-star">*</span>
+                            </label>
+                            <input asp-for="Input.Password" type="password" class="form-control" />
+                            <small class="form-text">
+                                Min 8 caractères, 1 majuscule, 1 chiffre, 1 spécial
+                            </small>
+                            <span asp-validation-for="Input.Password" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Input.ConfirmPassword" class="form-label">
+                                Confirmer <span class="required-star">*</span>
+                            </label>
+                            <input asp-for="Input.ConfirmPassword" type="password" class="form-control" />
+                            <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section Rôles -->
+                <div class="form-section">
+                    <h3 class="form-section-title">
+                        <i class="fas fa-user-shield"></i>
+                        Rôles et Permissions <span class="required-star">*</span>
+                    </h3>
+                    @if (Model.AvailableRoles != null && Model.AvailableRoles.Any())
+                    {
+                        <div class="roles-grid">
+                            @foreach (var role in Model.AvailableRoles)
+                            {
+                                <div class="role-card" onclick="toggleRole(this, '@role.Id')">
+                                    <label class="role-label" for="role_@role.Id">
+                                        <input class="role-checkbox" type="checkbox"
+                                               name="Input.SelectedRoleIds"
+                                               value="@role.Id"
+                                               id="role_@role.Id"
+                                               onchange="updateCardState(this)" />
+                                        <div class="role-info">
+                                            <div class="role-name">@role.Name</div>
+                                            @if (!string.IsNullOrEmpty(role.Description))
+                                            {
+                                                <div class="role-description">@role.Description</div>
+                                            }
+                                        </div>
+                                    </label>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted">Aucun rôle disponible.</p>
+                    }
+                    <span asp-validation-for="Input.SelectedRoleIds" class="text-danger"></span>
+                </div>
+
+                <!-- Section Statut -->
+                <div class="form-section">
+                    <h3 class="form-section-title">
+                        <i class="fas fa-toggle-on"></i>
+                        Statut du Compte
+                    </h3>
+                    <div class="status-toggle">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox"
+                                   asp-for="Input.IsActive"
+                                   id="isActiveSwitch" />
+                            <label class="form-label" for="isActiveSwitch">
+                                <strong>Compte Actif</strong>
+                            </label>
+                        </div>
+                        <small class="form-text">
+                            Si désactivé, l'utilisateur ne pourra pas se connecter au SSO
+                        </small>
+                    </div>
+                </div>
+
+                <!-- Boutons d'action -->
+                <div class="action-buttons">
+                    <a asp-page="./Index" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i>
+                        Annuler
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-check"></i>
+                        Créer l'Utilisateur
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleRole(card, roleId) {
+        const checkbox = card.querySelector('input[type="checkbox"]');
+        checkbox.checked = !checkbox.checked;
+        updateCardState(checkbox);
+    }
+
+    function updateCardState(checkbox) {
+        const card = checkbox.closest('.role-card');
+        if (checkbox.checked) {
+            card.classList.add('selected');
+        } else {
+            card.classList.remove('selected');
+        }
+    }
+
+    // Initialize card states on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.role-checkbox').forEach(function(checkbox) {
+            updateCardState(checkbox);
+        });
+    });
+</script>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

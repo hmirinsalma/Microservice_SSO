@@ -19,7 +19,7 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/callback" element={<Callback />} />
+          <Route path="/auth/callback" element={<Callback />} />
           <Route element={<ProtectedRoute />}>
             <Route element={<MainLayout />}>
               <Route path="/"               element={<DashboardPage />} />

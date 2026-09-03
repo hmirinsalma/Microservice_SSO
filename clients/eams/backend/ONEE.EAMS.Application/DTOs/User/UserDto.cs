@@ -11,7 +11,7 @@ public record UserDto(
     string Telephone,
     string Poste,
     string? PhotoUrl,
-    UserRole Role,
+    string Role,
     Guid? ServiceId,
     string? ServiceNom,
     bool IsActive
@@ -34,7 +34,7 @@ public record CreateUserRequest(
     string Email,
     string Telephone,
     string Poste,
-    UserRole Role,
+    string Role,
     Guid? ServiceId,
     string? SsoId = null
 );
@@ -45,7 +45,7 @@ public record UpdateUserRequest(
     string Prenom,
     string Telephone,
     string Poste,
-    UserRole Role,
+    string Role,
     Guid? ServiceId,
     bool IsActive
 );

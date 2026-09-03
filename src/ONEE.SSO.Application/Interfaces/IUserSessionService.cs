@@ -17,4 +17,6 @@ public interface IUserSessionService
     Task<int> RevokeAllUserSessionsAsync(Guid userId, string? ipAddress);
 
     Task RevokeSessionByRefreshTokenAsync(string refreshToken, string? ipAddress);
+
+    Task<bool> HasActiveSessionAsync(string email);
 }

@@ -55,19 +55,19 @@ public class DataSeeder
         _ctx.Categories.AddRange(categories);
 
         // ── Utilisateurs (sans mot de passe — SSO) ─────────────────────────────
-        var admin     = MakeUser("Ahmed",  "Benali", "admin@onee.ma",      "Administrateur", UserRole.Admin_Patrimoine, null);
-        var directeur = MakeUser("Fatima", "Zahra",  "directeur@onee.ma",  "Directeur",      UserRole.Directeur,        null);
+        var admin     = MakeUser("Ahmed",  "Benali", "admin@onee.ma",      "Administrateur", "Admin_Patrimoine", null);
+        var directeur = MakeUser("Fatima", "Zahra",  "directeur@onee.ma",  "Directeur",      "Directeur",        null);
 
         var chefs = services.Select((s, i) => MakeUser(
             ChefNoms[i], ChefPrenoms[i],
             $"chef.{s.Code.ToLower()}@onee.ma",
-            "Chef de Service", UserRole.Chef_de_Service, s.Id)).ToList();
+            "Chef de Service", "Chef_de_Service", s.Id)).ToList();
 
         var techniciens = Enumerable.Range(0, 20).Select(i => MakeUser(
             TechNoms[i % TechNoms.Length],
             TechPrenoms[i % TechPrenoms.Length],
             $"tech{i + 1:D2}@onee.ma",
-            "Technicien de Maintenance", UserRole.Technicien,
+            "Technicien de Maintenance", "Technicien",
             services[i % services.Length].Id)).ToList();
 
         _ctx.Users.Add(admin);
@@ -192,7 +192,7 @@ public class DataSeeder
     /// Le SsoId sera renseigné lors de la liaison avec le microservice SSO.
     /// </summary>
     private static User MakeUser(string nom, string prenom, string email, string poste,
-        UserRole role, Guid? serviceId) => new()
+        string role, Guid? serviceId) => new()
     {
         Id         = Guid.NewGuid(),
         SsoId      = null,
@@ -201,7 +201,7 @@ public class DataSeeder
         Email      = email,
         Telephone  = $"+212 6{_rng.Next(10000000, 99999999)}",
         Poste      = poste,
-        RoleMetier = role,   // données métier — pas utilisé pour l'autorisation
+        Role = role,   // données métier — pas utilisé pour l'autorisation
         ServiceId  = serviceId,
         IsActive   = true,
         CreatedAt  = DateTime.UtcNow

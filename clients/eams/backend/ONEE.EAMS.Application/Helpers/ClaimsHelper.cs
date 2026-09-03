@@ -35,12 +35,34 @@ public static class ClaimsHelper
     /// <summary>
     /// Retourne le rôle métier de l'utilisateur connecté, extrait du JWT.
     /// Ce rôle provient du SSO — jamais de la base de données pour l'autorisation.
+    /// Gère les utilisateurs multi-rôles (ignore les rôles d'autres apps).
+    /// ✅ Gère les rôles qualifiés SSO (format: RoleName@eams-spa).
     /// </summary>
     public static UserRole GetRole(this ClaimsPrincipal user)
     {
-        var val = user.FindFirst(ClaimTypes.Role)?.Value
-            ?? throw new InvalidOperationException("Claim 'role' manquant dans le JWT.");
-        return Enum.Parse<UserRole>(val);
+        // Récupérer TOUS les rôles (l'utilisateur peut avoir plusieurs rôles)
+        var roleClaims = user.FindAll(ClaimTypes.Role).Select(c => c.Value).ToList();
+        
+        if (!roleClaims.Any())
+            throw new InvalidOperationException("Claim 'role' manquant dans le JWT.");
+
+        // Essayer de trouver un rôle valide EAMS (ignorer les rôles d'autres apps)
+        foreach (var roleClaim in roleClaims)
+        {
+            // ✅ IMPORTANT: Extraire le rôle des rôles qualifiés SSO (format: Role@eams-spa)
+            // Si le rôle contient '@', prendre uniquement la partie avant
+            var roleName = roleClaim.Contains('@') 
+                ? roleClaim.Split('@')[0] 
+                : roleClaim;
+            
+            if (Enum.TryParse<UserRole>(roleName, ignoreCase: true, out var parsedRole))
+            {
+                return parsedRole;
+            }
+        }
+
+        // Si aucun rôle EAMS trouvé, utiliser Technicien par défaut
+        return UserRole.Technicien;
     }
 
     /// <summary>Retourne le ServiceId métier depuis le JWT.</summary>

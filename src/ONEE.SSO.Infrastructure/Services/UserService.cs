@@ -8,13 +8,16 @@ namespace ONEE.SSO.Infrastructure.Services;
 public class UserService : IUserService
 {
     private readonly IUserRepository _userRepository;
+    private readonly IRoleRepository _roleRepository;
     private readonly IPasswordHasher _passwordHasher;
 
     public UserService(
         IUserRepository userRepository,
+        IRoleRepository roleRepository,
         IPasswordHasher passwordHasher)
     {
         _userRepository = userRepository;
+        _roleRepository = roleRepository;
         _passwordHasher = passwordHasher;
     }
 
@@ -63,6 +66,27 @@ public class UserService : IUserService
 
     public async Task<UserDto> CreateAsync(CreateUserDto dto)
     {
+        // Vérifier que l'email n'existe pas déjà
+        if (await _userRepository.EmailExistsAsync(dto.Email))
+        {
+            throw new Exception($"Un utilisateur avec l'email {dto.Email} existe déjà.");
+        }
+
+        // Vérifier que les rôles existent
+        var roles = new List<Role>();
+        if (dto.RoleIds != null && dto.RoleIds.Any())
+        {
+            foreach (var roleId in dto.RoleIds)
+            {
+                var role = await _roleRepository.GetByIdAsync(roleId);
+                if (role == null)
+                {
+                    throw new Exception($"Le rôle avec l'ID {roleId} n'existe pas.");
+                }
+                roles.Add(role);
+            }
+        }
+
         var user = new User
         {
             Id = Guid.NewGuid(),
@@ -70,9 +94,20 @@ public class UserService : IUserService
             LastName = dto.LastName,
             Email = dto.Email,
             PasswordHash = _passwordHasher.Hash(dto.Password),
-            IsActive = true,
-            CreatedAt = DateTime.UtcNow
+            IsActive = dto.IsActive,
+            CreatedAt = DateTime.UtcNow,
+            UserRoles = roles.Select(r => new UserRole
+            {
+                RoleId = r.Id,
+                UserId = Guid.NewGuid() // Sera remplacé par l'ID du user
+            }).ToList()
         };
+
+        // Corriger les UserId après création
+        foreach (var userRole in user.UserRoles)
+        {
+            userRole.UserId = user.Id;
+        }
 
         await _userRepository.AddAsync(user);
         await _userRepository.SaveChangesAsync();
@@ -92,6 +127,46 @@ public class UserService : IUserService
         user.Email = dto.Email;
         user.IsActive = dto.IsActive;
         user.UpdatedAt = DateTime.UtcNow;
+
+        // Mise à jour du mot de passe si fourni
+        if (!string.IsNullOrWhiteSpace(dto.Password))
+        {
+            user.PasswordHash = _passwordHasher.Hash(dto.Password);
+        }
+
+        // Mise à jour des rôles si fournis
+        if (dto.RoleIds != null && dto.RoleIds.Any())
+        {
+            // Charger les UserRoles existants depuis la base
+            var existingUserRoles = await _userRepository.GetUserRolesAsync(id);
+            
+            // Supprimer les anciens rôles
+            foreach (var userRole in existingUserRoles)
+            {
+                _userRepository.RemoveUserRole(userRole);
+            }
+            
+            // Sauvegarder pour appliquer les suppressions
+            await _userRepository.SaveChangesAsync();
+
+            // Ajouter les nouveaux rôles
+            foreach (var roleId in dto.RoleIds)
+            {
+                var role = await _roleRepository.GetByIdAsync(roleId);
+                if (role == null)
+                {
+                    throw new Exception($"Le rôle avec l'ID {roleId} n'existe pas.");
+                }
+
+                var newUserRole = new UserRole
+                {
+                    UserId = user.Id,
+                    RoleId = roleId
+                };
+                
+                await _userRepository.AddUserRoleAsync(newUserRole);
+            }
+        }
 
         _userRepository.Update(user);
         await _userRepository.SaveChangesAsync();

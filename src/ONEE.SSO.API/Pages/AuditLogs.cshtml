@@ -25,7 +25,7 @@
 
     <!-- Filters -->
     <div class="filters-section">
-        <form method="get" class="filters-form">
+        <form method="get" class="filters-form" id="filtersForm">
             <div class="filter-group">
                 <input type="text" name="search" value="@Model.SearchTerm" placeholder="Rechercher..." class="filter-input" />
             </div>
@@ -450,8 +450,13 @@
         }
 
         function exportLogs() {
-            alert('Fonctionnalité d\'export en cours de développement');
-            // TODO: Implement CSV export
+            // Get current filter values
+            const form = document.getElementById('filtersForm');
+            const formData = new FormData(form);
+            const params = new URLSearchParams(formData);
+            
+            // Navigate to export CSV handler
+            window.location.href = '/AuditLogs?handler=ExportCsv&' + params.toString();
         }
     </script>
 }

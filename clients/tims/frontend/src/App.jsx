@@ -34,7 +34,7 @@ function AppRoutes() {
     <Routes>
       <Route path="/login" element={isAuthenticated ? <Navigate to="/" replace /> : <LoginSSO />} />
       <Route path="/login-sso" element={isAuthenticated ? <Navigate to="/" replace /> : <LoginSSO />} />
-      <Route path="/callback" element={<Callback />} />
+      <Route path="/auth/callback" element={<Callback />} />
 
       {[
         { path: '/',                    el: <DashboardPage />,         roles: null },
