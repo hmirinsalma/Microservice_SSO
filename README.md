@@ -589,7 +589,7 @@ Ce projet contient des **secrets de développement** à des fins de démonstrati
 
 Si vous découvrez une faille de sécurité, **NE CRÉEZ PAS** d'issue publique.
 
-Contactez-nous : **security@onee.ma**
+Contactez-nous : **hmirinsalmaa@gmail.ma**
 
 Voir [SECURITY.md](./SECURITY.md) pour plus de détails.
 
@@ -604,9 +604,7 @@ Les contributions sont les bienvenues ! Consultez [CONTRIBUTING.md](./CONTRIBUTI
 - 🔧 Soumettre une Pull Request
 - 📖 Améliorer la documentation
 
-### Contributeurs
 
-- **Salma** - *Développement initial* - [EMSI Casablanca](https://www.emsi.ma/)
 
 ---
 
@@ -634,8 +632,7 @@ in the Software without restriction...
 ## 📞 Contact & Support
 
 - 📧 **Email** : hmirinsalmaa@gmail.com
-- 🐛 **Issues** : [GitHub Issues](https://github.com/VOTRE_USERNAME/ONEE.SSO/issues)
-- 📖 **Documentation** : [Wiki](https://github.com/VOTRE_USERNAME/ONEE.SSO/wiki) (si configuré)
+
 
 ---
 
