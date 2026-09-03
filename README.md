@@ -628,31 +628,18 @@ in the Software without restriction...
 
 ## 👨‍💻 Auteur
 
-**Salma**  
-École : **EMSI Casablanca**  
-Projet : **Projet de Fin d'Année - ONEE**  
-Période : **Juillet - Septembre 2026**
+**Salma Hmirin**   
 
-**Encadrement** :  
-Office National de l'Électricité et de l'Eau Potable (ONEE)
-
----
 
 ## 📞 Contact & Support
 
-- 📧 **Email** : security@onee.ma
+- 📧 **Email** : hmirinsalmaa@gmail.com
 - 🐛 **Issues** : [GitHub Issues](https://github.com/VOTRE_USERNAME/ONEE.SSO/issues)
 - 📖 **Documentation** : [Wiki](https://github.com/VOTRE_USERNAME/ONEE.SSO/wiki) (si configuré)
 
 ---
 
-## 🙏 Remerciements
 
-Merci à l'**ONEE** pour l'opportunité de réaliser ce projet dans un environnement professionnel stimulant.
-
-Merci également à l'**EMSI Casablanca** pour l'encadrement académique tout au long de ce projet.
-
----
 
 ## 📊 Statistiques du Projet
 
